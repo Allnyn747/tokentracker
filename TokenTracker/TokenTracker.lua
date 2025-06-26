@@ -14,8 +14,8 @@ if TokenTrackerData.totalEarnedSinceStart == nil then TokenTrackerData.totalEarn
 if TokenTrackerData.isTrackingActive == nil then TokenTrackerData.isTrackingActive = false end
 if TokenTrackerData.lastKnownGold == nil then TokenTrackerData.lastKnownGold = 0 end
 if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
--- TokenTrackerData.framePosition is no longer needed as frame position is not saved
 if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
+if TokenTrackerData.MinimapButtonPosition == nil then TokenTrackerData.MinimapButtonPosition = nil end
 
 -- UI Element References
 local mainFrame
@@ -25,6 +25,7 @@ local targetText
 local progressText
 local startButton
 local stopButton
+local minimapButton -- Reference for the minimap button
 
 -- Chat message function
 local function PrintMessage(message)
@@ -50,28 +51,24 @@ end
 
 -- Function to update UI
 local function InternalUpdateUI()
-    if not mainFrame then
-        PrintMessage("DEBUG: UI not ready in UpdateUI()") -- ACTIVE: This is an error message.
+    if not mainFrame or not statusText or not goldEarnedText or not targetText or not progressText then
         return
     end
 
     local earnedText = "Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, false)
     local targetDisplay = "Target: " .. FormatGold(TokenTrackerData.targetPrice, false)
 
-    -- PrintMessage("DEBUG: UpdateUI - " .. earnedText .. " | " .. targetDisplay) -- COMMENTED OUT: Not an error.
-
-    goldEarnedText:SetText(" ")  -- Force redraw
     goldEarnedText:SetText(earnedText)
     targetText:SetText(targetDisplay)
 
     if TokenTrackerData.isTrackingActive then
         statusText:SetText("Status: Active")
-        statusText:SetTextColor(0, 1, 0)
+        statusText:SetTextColor(0, 1, 0) -- Green
         startButton:Disable()
         stopButton:Enable()
     else
         statusText:SetText("Status: Inactive")
-        statusText:SetTextColor(1, 0, 0)
+        statusText:SetTextColor(1, 0, 0) -- Red
         startButton:Enable()
         stopButton:Disable()
     end
@@ -112,6 +109,53 @@ function TokenTracker.StopFarming()
     TokenTracker.UpdateUI()
 end
 
+-- Minimap Button Functions
+function TokenTracker.ToggleMainFrame()
+    if mainFrame then
+        if mainFrame:IsShown() then
+            mainFrame:Hide()
+            PrintMessage("TokenTracker UI Hidden.")
+        else
+            mainFrame:Show()
+            PrintMessage("TokenTracker UI Shown.")
+        end
+    else
+        PrintMessage("DEBUG: Attempted to toggle mainFrame, but it's not assigned yet.")
+    end
+end
+
+function TokenTracker.ShowOptions()
+    PrintMessage("Right-click on minimap button: Options (Not yet implemented).");
+end
+
+function TokenTracker.SaveMinimapButtonPosition()
+    if minimapButton then
+        local point, relativeTo, relativePoint, x, y = minimapButton:GetPoint();
+        TokenTrackerData.MinimapButtonPosition = {
+            point = point,
+            relativeTo = relativeTo:GetName(),
+            relativePoint = relativePoint,
+            x = x,
+            y = y
+        };
+    end
+end
+
+function TokenTracker.LoadMinimapButtonPosition()
+    if minimapButton then
+        if TokenTrackerData.MinimapButtonPosition then
+            local pos = TokenTrackerData.MinimapButtonPosition;
+            minimapButton:ClearAllPoints();
+            minimapButton:SetPoint(pos.point, _G[pos.relativeTo] or MinimapCluster, pos.relativePoint, pos.x, pos.y);
+        else
+            -- Set default position relative to Minimap (the actual map texture)
+            -- Changed to anchor to TOPLEFT with small offsets for guaranteed visibility
+            minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 5, -5); -- *** THIS LINE IS CHANGED ***
+            PrintMessage("DEBUG: Minimap button set to default TOPLEFT of Minimap for first load.");
+        end
+    end
+end
+
 -- Event frame
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
@@ -119,7 +163,6 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         PrintMessage("Addon loaded, waiting for PLAYER_LOGIN to initialize UI.")
 
     elseif event == "PLAYER_LOGIN" then
-        -- Assign UI elements now, after UI is loaded
         mainFrame = TokenTrackerFrame
         statusText = TokenTrackerStatusText
         goldEarnedText = TokenTrackerGoldEarnedText
@@ -127,11 +170,32 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         progressText = TokenTrackerProgressText
         startButton = TokenTrackerStartButton
         stopButton = TokenTrackerStopButton
+        minimapButton = TokenTrackerMinimapButton
 
-        if mainFrame and goldEarnedText then
-            -- PrintMessage("DEBUG: UI elements assigned at PLAYER_LOGIN.") -- COMMENTED OUT: Not an error.
+        -- DEBUG PRINTS START (simplified)
+        PrintMessage("DEBUG: Attempting to assign minimapButton. TokenTrackerMinimapButton is: " .. tostring(TokenTrackerMinimapButton));
+        if minimapButton then
+            PrintMessage("DEBUG: minimapButton (local) assigned successfully. Name: " .. minimapButton:GetName());
+            if minimapButton:GetParent() then
+                PrintMessage("DEBUG: minimapButton parent is: " .. minimapButton:GetParent():GetName());
+            else
+                PrintMessage("DEBUG: minimapButton has no parent assigned yet (this shouldn't happen with XML parent).");
+            end
         else
-            PrintMessage("DEBUG: ERROR - UI elements NOT found at PLAYER_LOGIN.") -- ACTIVE: This is an error message.
+            PrintMessage("DEBUG: minimapButton (local) assignment FAILED. TokenTrackerMinimapButton was nil.");
+        end
+        -- We will check for Minimap (not MinimapCluster) in debug now that we're parenting to it
+        if Minimap then
+            PrintMessage("DEBUG: Minimap (global) exists. Name: " .. Minimap:GetName());
+        else
+            PrintMessage("DEBUG: Minimap (global) is NIL. This is a problem if button is parented to it!");
+        end
+        -- DEBUG PRINTS END
+
+        if mainFrame and goldEarnedText and minimapButton then
+            PrintMessage("TokenTracker UI elements found and assigned in Lua.")
+        else
+            PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN. Check XML names carefully.")
         end
 
         mainFrame:SetBackdrop({
@@ -149,12 +213,11 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
 
         mainFrame:SetScript("OnHide", function() TokenTrackerData.frameVisible = false end)
         mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
-        -- The OnStopMovingOrSizing script is removed as per your request,
-        -- as you do not need to save the frame's position across reloads.
-        -- If you decide to add position saving back, you'll need to re-add this script.
-
         if TokenTrackerData.frameVisible then mainFrame:Show() else mainFrame:Hide() end
 
+        TokenTracker.LoadMinimapButtonPosition();
+        PrintMessage("DEBUG: TokenTracker.LoadMinimapButtonPosition() called.");
+        
         TokenTrackerData.lastKnownGold = GetMoney()
         PrintMessage("Addon ready. Current character gold: " .. FormatGold(GetMoney(), true))
 
@@ -189,7 +252,7 @@ eventFrame:RegisterEvent("PLAYER_MONEY")
 
 -- Slash commands
 SLASH_TOKENTRACKER1 = "/tt"
-SLASH_TOKENTRACKER2 = "/TokenTracker" -- CHANGED THIS LINE
+SLASH_TOKENTRACKER2 = "/TokenTracker"
 
 local function HandleSlashCommand(msg, editbox)
     local args = { string.split(" ", msg) }
@@ -256,10 +319,12 @@ local function HandleSlashCommand(msg, editbox)
     end
 end
 
+-- Register the slash command handler
 SlashCmdList["TOKENTRACKER"] = HandleSlashCommand
 
+-- Filter chat messages to prevent slash commands from appearing in chat
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(self, event, msg, ...)
-    if string.find(msg, "/tt", 1, true) or string.find(msg, "/TokenTracker", 1, true) then -- CHANGED THIS LINE
+    if string.find(msg, "/tt", 1, true) or string.find(msg, "/TokenTracker", 1, true) then
         return true
     end
     return false

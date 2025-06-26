@@ -130,14 +130,20 @@ end
 
 function TokenTracker.SaveMinimapButtonPosition()
     if minimapButton then
-        local point, relativeTo, relativePoint, x, y = minimapButton:GetPoint();
+        local point, relativeTo, relativePoint, x, y = minimapButton:GetPoint()
+        local relativeToName = nil
+
+        if relativeTo and relativeTo.GetName then
+            relativeToName = relativeTo:GetName()
+        end
+
         TokenTrackerData.MinimapButtonPosition = {
-            point = point,
-            relativeTo = relativeTo:GetName(),
-            relativePoint = relativePoint,
-            x = x,
-            y = y
-        };
+            point = point or "TOPLEFT",
+            relativeTo = relativeToName or "Minimap",
+            relativePoint = relativePoint or "TOPLEFT",
+            x = x or 0,
+            y = y or 0
+        }
     end
 end
 
@@ -148,9 +154,8 @@ function TokenTracker.LoadMinimapButtonPosition()
             minimapButton:ClearAllPoints();
             minimapButton:SetPoint(pos.point, _G[pos.relativeTo] or MinimapCluster, pos.relativePoint, pos.x, pos.y);
         else
-            -- Set default position relative to Minimap (the actual map texture)
-            -- Changed to anchor to TOPLEFT with small offsets for guaranteed visibility
-            minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 5, -5); -- *** THIS LINE IS CHANGED ***
+            -- Default position
+            minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 5, -5);
             PrintMessage("DEBUG: Minimap button set to default TOPLEFT of Minimap for first load.");
         end
     end
@@ -172,7 +177,6 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         stopButton = TokenTrackerStopButton
         minimapButton = TokenTrackerMinimapButton
 
-        -- DEBUG PRINTS START (simplified)
         PrintMessage("DEBUG: Attempting to assign minimapButton. TokenTrackerMinimapButton is: " .. tostring(TokenTrackerMinimapButton));
         if minimapButton then
             PrintMessage("DEBUG: minimapButton (local) assigned successfully. Name: " .. minimapButton:GetName());
@@ -184,13 +188,12 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         else
             PrintMessage("DEBUG: minimapButton (local) assignment FAILED. TokenTrackerMinimapButton was nil.");
         end
-        -- We will check for Minimap (not MinimapCluster) in debug now that we're parenting to it
+
         if Minimap then
             PrintMessage("DEBUG: Minimap (global) exists. Name: " .. Minimap:GetName());
         else
             PrintMessage("DEBUG: Minimap (global) is NIL. This is a problem if button is parented to it!");
         end
-        -- DEBUG PRINTS END
 
         if mainFrame and goldEarnedText and minimapButton then
             PrintMessage("TokenTracker UI elements found and assigned in Lua.")
@@ -217,7 +220,25 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
 
         TokenTracker.LoadMinimapButtonPosition();
         PrintMessage("DEBUG: TokenTracker.LoadMinimapButtonPosition() called.");
-        
+
+        -- <<<<<<<<<<<< Added minimap button drag and click handlers here >>>>>>>>>>>>>
+        minimapButton:RegisterForDrag("LeftButton")
+        minimapButton:SetScript("OnDragStart", function(self)
+            self:StartMoving()
+        end)
+        minimapButton:SetScript("OnDragStop", function(self)
+            self:StopMovingOrSizing()
+            TokenTracker.SaveMinimapButtonPosition()
+        end)
+        minimapButton:SetScript("OnClick", function(self, button)
+            if button == "LeftButton" then
+                TokenTracker.ToggleMainFrame()
+            elseif button == "RightButton" then
+                TokenTracker.ShowOptions()
+            end
+        end)
+        -- <<<<<<<<<<<< End added section >>>>>>>>>>>>>
+
         TokenTrackerData.lastKnownGold = GetMoney()
         PrintMessage("Addon ready. Current character gold: " .. FormatGold(GetMoney(), true))
 
@@ -300,7 +321,7 @@ local function HandleSlashCommand(msg, editbox)
         else
             PrintMessage("No target set. Use '/tt target <amount>'.")
         end
-    TokenTracker.UpdateUI()
+        TokenTracker.UpdateUI()
     elseif command == "show" then
         if mainFrame then mainFrame:Show() end
     elseif command == "hide" then

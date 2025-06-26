@@ -59,7 +59,7 @@ local function InternalUpdateUI()
     local targetDisplay = "Target: " .. FormatGold(TokenTrackerData.targetPrice, false)
 
     -- PrintMessage("DEBUG: UpdateUI - " .. earnedText .. " | " .. targetDisplay) -- COMMENTED OUT: Not an error.
-    
+
     goldEarnedText:SetText(" ")  -- Force redraw
     goldEarnedText:SetText(earnedText)
     targetText:SetText(targetDisplay)
@@ -189,7 +189,7 @@ eventFrame:RegisterEvent("PLAYER_MONEY")
 
 -- Slash commands
 SLASH_TOKENTRACKER1 = "/tt"
-SLASH_TOKENTRACKER2 = "/tokentracker"
+SLASH_TOKENTRACKER2 = "/TokenTracker" -- CHANGED THIS LINE
 
 local function HandleSlashCommand(msg, editbox)
     local args = { string.split(" ", msg) }
@@ -233,7 +233,7 @@ local function HandleSlashCommand(msg, editbox)
             if remainingGold < 0 then remainingGold = 0 end
             PrintMessage("Progress to target (" .. FormatGold(TokenTrackerData.targetPrice, true) .. "):")
             PrintMessage("Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, true) ..
-                                     " | Remaining: " .. FormatGold(remainingGold, true))
+                                         " | Remaining: " .. FormatGold(remainingGold, true))
         else
             PrintMessage("No target set. Use '/tt target <amount>'.")
         end
@@ -259,7 +259,7 @@ end
 SlashCmdList["TOKENTRACKER"] = HandleSlashCommand
 
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(self, event, msg, ...)
-    if string.find(msg, "/tt", 1, true) or string.find(msg, "/tokentracker", 1, true) then
+    if string.find(msg, "/tt", 1, true) or string.find(msg, "/TokenTracker", 1, true) then -- CHANGED THIS LINE
         return true
     end
     return false

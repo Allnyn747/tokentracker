@@ -5,4 +5,4 @@
 ## Version: 0.1
 ## SavedVariables: TokenTrackerData
 TokenTrackerUI.xml
-tokentracker.lua
+TokenTracker.lua

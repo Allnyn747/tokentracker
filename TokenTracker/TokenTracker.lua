@@ -125,7 +125,7 @@ function TokenTracker.ToggleMainFrame()
 end
 
 function TokenTracker.ShowOptions()
-    PrintMessage("Right-click on minimap button: Options (Not yet implemented).");
+    PrintMessage("Right-click on minimap button: Options (Not yet implemented).")
 end
 
 function TokenTracker.SaveMinimapButtonPosition()
@@ -138,9 +138,9 @@ function TokenTracker.SaveMinimapButtonPosition()
         end
 
         TokenTrackerData.MinimapButtonPosition = {
-            point = point or "TOPLEFT",
-            relativeTo = relativeToName or "Minimap",
-            relativePoint = relativePoint or "TOPLEFT",
+            point = point or "CENTER",
+            relativeTo = relativeToName or "UIParent",
+            relativePoint = relativePoint or "BOTTOMLEFT",
             x = x or 0,
             y = y or 0
         }
@@ -150,13 +150,13 @@ end
 function TokenTracker.LoadMinimapButtonPosition()
     if minimapButton then
         if TokenTrackerData.MinimapButtonPosition then
-            local pos = TokenTrackerData.MinimapButtonPosition;
-            minimapButton:ClearAllPoints();
-            minimapButton:SetPoint(pos.point, _G[pos.relativeTo] or MinimapCluster, pos.relativePoint, pos.x, pos.y);
+            local pos = TokenTrackerData.MinimapButtonPosition
+            minimapButton:ClearAllPoints()
+            minimapButton:SetPoint(pos.point, _G[pos.relativeTo] or UIParent, pos.relativePoint, pos.x, pos.y)
         else
-            -- Default position
-            minimapButton:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 5, -5);
-            PrintMessage("DEBUG: Minimap button set to default TOPLEFT of Minimap for first load.");
+            -- Default position on minimap edge
+            minimapButton:SetPoint("CENTER", Minimap, "CENTER", 80, -80)
+            PrintMessage("DEBUG: Minimap button set to default position on minimap edge.")
         end
     end
 end
@@ -177,28 +177,10 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         stopButton = TokenTrackerStopButton
         minimapButton = TokenTrackerMinimapButton
 
-        PrintMessage("DEBUG: Attempting to assign minimapButton. TokenTrackerMinimapButton is: " .. tostring(TokenTrackerMinimapButton));
-        if minimapButton then
-            PrintMessage("DEBUG: minimapButton (local) assigned successfully. Name: " .. minimapButton:GetName());
-            if minimapButton:GetParent() then
-                PrintMessage("DEBUG: minimapButton parent is: " .. minimapButton:GetParent():GetName());
-            else
-                PrintMessage("DEBUG: minimapButton has no parent assigned yet (this shouldn't happen with XML parent).");
-            end
-        else
-            PrintMessage("DEBUG: minimapButton (local) assignment FAILED. TokenTrackerMinimapButton was nil.");
-        end
-
-        if Minimap then
-            PrintMessage("DEBUG: Minimap (global) exists. Name: " .. Minimap:GetName());
-        else
-            PrintMessage("DEBUG: Minimap (global) is NIL. This is a problem if button is parented to it!");
-        end
-
         if mainFrame and goldEarnedText and minimapButton then
             PrintMessage("TokenTracker UI elements found and assigned in Lua.")
         else
-            PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN. Check XML names carefully.")
+            PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN.")
         end
 
         mainFrame:SetBackdrop({
@@ -218,16 +200,32 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
         if TokenTrackerData.frameVisible then mainFrame:Show() else mainFrame:Hide() end
 
-        TokenTracker.LoadMinimapButtonPosition();
-        PrintMessage("DEBUG: TokenTracker.LoadMinimapButtonPosition() called.");
+        TokenTracker.LoadMinimapButtonPosition()
+        PrintMessage("DEBUG: TokenTracker.LoadMinimapButtonPosition() called.")
 
-        -- <<<<<<<<<<<< Added minimap button drag and click handlers here >>>>>>>>>>>>>
+        -- Minimap button drag and click handlers with edge snapping
         minimapButton:RegisterForDrag("LeftButton")
         minimapButton:SetScript("OnDragStart", function(self)
             self:StartMoving()
         end)
         minimapButton:SetScript("OnDragStop", function(self)
             self:StopMovingOrSizing()
+
+            local mx, my = Minimap:GetCenter()
+            local px, py = self:GetCenter()
+            local radius = Minimap:GetWidth() / 2
+            local x, y = px - mx, py - my
+            local distance = math.sqrt(x * x + y * y)
+
+            if distance > radius then
+                local scale = radius / distance
+                x = x * scale
+                y = y * scale
+            end
+
+            self:ClearAllPoints()
+            self:SetPoint("CENTER", Minimap, "CENTER", x, y)
+
             TokenTracker.SaveMinimapButtonPosition()
         end)
         minimapButton:SetScript("OnClick", function(self, button)
@@ -237,7 +235,6 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
                 TokenTracker.ShowOptions()
             end
         end)
-        -- <<<<<<<<<<<< End added section >>>>>>>>>>>>>
 
         TokenTrackerData.lastKnownGold = GetMoney()
         PrintMessage("Addon ready. Current character gold: " .. FormatGold(GetMoney(), true))

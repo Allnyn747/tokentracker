@@ -20,4 +20,4 @@ desktop.ini
 WTF/
 Interface/
 AddOns/*.zip
-!AddOns/tokentracker/  # Exclude all addons except tokentracker
+!AddOns/TokenTracker/ # Exclude all addons except TokenTracker

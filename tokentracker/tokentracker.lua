@@ -1,5 +1,5 @@
 -- TokenTracker - A World of Warcraft AddOn to track gold earned for a WoW Token.
--- Author: YourName (Remember to update your name in tokentracker.toc)
+-- Author: Allnyn747
 -- Version: 0.1
 -- Interface: 110107 (The War Within)
 -- SavedVariables: TokenTrackerData (Declared in .toc file for persistent storage)

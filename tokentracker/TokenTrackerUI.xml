@@ -8,7 +8,7 @@ UI_Frame.xsd">
         <Scripts>
             <OnMouseDown> self:StartMoving() </OnMouseDown>
             <OnMouseUp> self:StopMovingOrSizing() </OnMouseUp>
-            </Scripts>
+        </Scripts>
         <Layers>
             <Layer level="ARTWORK">
                 <FontString name="TokenTrackerTitle" inherits="GameFontNormalLarge" text="TOKEN TRACKER">
@@ -37,8 +37,7 @@ UI_Frame.xsd">
 
                 <FontString name="TokenTrackerProgressText" inherits="GameFontHighlightSmall" text="Progress: N/A">
                     <Anchors>
-                        <Anchor point="TOPLEFT" x="20" y="-100"/>
-                    </Anchors>
+                        <Anchor point="TOPLEFT" x="20" y="-100"/> </Anchors>
                 </FontString>
             </Layer>
         </Layers>
@@ -46,8 +45,7 @@ UI_Frame.xsd">
             <Button name="TokenTrackerStartButton" inherits="UIPanelButtonTemplate" text="Start Farming">
                 <Size x="100" y="25"/>
                 <Anchors>
-                    <Anchor point="BOTTOMLEFT" x="20" y="50"/>
-                </Anchors>
+                    <Anchor point="BOTTOMLEFT" x="20" y="20"/> </Anchors>
                 <Scripts>
                     <OnClick>
                         -- Lua function will be assigned here in tokentracker.lua
@@ -57,8 +55,7 @@ UI_Frame.xsd">
             <Button name="TokenTrackerStopButton" inherits="UIPanelButtonTemplate" text="Stop Farming">
                 <Size x="100" y="25"/>
                 <Anchors>
-                    <Anchor point="BOTTOMRIGHT" x="-20" y="50"/>
-                </Anchors>
+                    <Anchor point="BOTTOMRIGHT" x="-20" y="20"/> </Anchors>
                 <Scripts>
                     <OnClick>
                         -- Lua function will be assigned here in tokentracker.lua

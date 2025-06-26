@@ -5,26 +5,23 @@ UI_Frame.xsd">
         <Anchors>
             <Anchor point="CENTER"/>
         </Anchors>
-        <!-- Backdrop will be set via Lua -->
         <Scripts>
             <OnMouseDown> self:StartMoving() </OnMouseDown>
             <OnMouseUp> self:StopMovingOrSizing() </OnMouseUp>
-        </Scripts>
+            </Scripts>
         <Layers>
             <Layer level="ARTWORK">
                 <FontString name="TokenTrackerTitle" inherits="GameFontNormalLarge" text="TOKEN TRACKER">
                     <Anchors>
                         <Anchor point="TOP" x="0" y="-10"/>
                     </Anchors>
-                    <Color r="1" g="0.82" b="0"/> <!-- Gold color -->
-                </FontString>
+                    <Color r="1" g="0.82" b="0"/> </FontString>
 
                 <FontString name="TokenTrackerStatusText" inherits="GameFontHighlightSmall" text="Status: Loading...">
                     <Anchors>
                         <Anchor point="TOPLEFT" x="20" y="-40"/>
                     </Anchors>
-                    <Color r="1" g="1" b="1"/> <!-- Neutral color initially -->
-                </FontString>
+                    <Color r="1" g="1" b="1"/> </FontString>
 
                 <FontString name="TokenTrackerGoldEarnedText" inherits="GameFontHighlightSmall" text="Earned: 0g 0s 0c">
                     <Anchors>

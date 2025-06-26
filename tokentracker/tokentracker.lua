@@ -14,7 +14,7 @@ if TokenTrackerData.totalEarnedSinceStart == nil then TokenTrackerData.totalEarn
 if TokenTrackerData.isTrackingActive == nil then TokenTrackerData.isTrackingActive = false end
 if TokenTrackerData.lastKnownGold == nil then TokenTrackerData.lastKnownGold = 0 end
 if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
-if TokenTrackerData.framePosition == nil then TokenTrackerData.framePosition = { x = 0, y = 0 } end
+-- TokenTrackerData.framePosition is no longer needed as frame position is not saved
 if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
 
 -- UI Element References
@@ -116,8 +116,7 @@ end
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
     if event == "ADDON_LOADED" and addonName == "TokenTracker" then
-        -- Don't assign UI elements here (frame might not be ready)
-        -- Just print debug and register slash commands here if needed
+        -- Wait for PLAYER_LOGIN to initialize UI fully
         PrintMessage("Addon loaded, waiting for PLAYER_LOGIN to initialize UI.")
 
     elseif event == "PLAYER_LOGIN" then
@@ -151,13 +150,10 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
 
         mainFrame:SetScript("OnHide", function() TokenTrackerData.frameVisible = false end)
         mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
-        mainFrame:SetScript("OnStopMovingOrSizing", function()
-            local _, _, _, x, y = mainFrame:GetPoint("CENTER", UIParent)
-            TokenTrackerData.framePosition.x = x
-            TokenTrackerData.framePosition.y = y
-        end)
+        -- The OnStopMovingOrSizing script is removed as per your request,
+        -- as you do not need to save the frame's position across reloads.
+        -- If you decide to add position saving back, you'll need to re-add this script.
 
-        mainFrame:SetPoint("CENTER", UIParent, "CENTER", TokenTrackerData.framePosition.x, TokenTrackerData.framePosition.y)
         if TokenTrackerData.frameVisible then mainFrame:Show() else mainFrame:Hide() end
 
         TokenTrackerData.lastKnownGold = GetMoney()
@@ -238,11 +234,11 @@ local function HandleSlashCommand(msg, editbox)
             if remainingGold < 0 then remainingGold = 0 end
             PrintMessage("Progress to target (" .. FormatGold(TokenTrackerData.targetPrice, true) .. "):")
             PrintMessage("Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, true) ..
-                         " | Remaining: " .. FormatGold(remainingGold, true))
+                                     " | Remaining: " .. FormatGold(remainingGold, true))
         else
             PrintMessage("No target set. Use '/tt target <amount>'.")
         end
-        TokenTracker.UpdateUI()
+    TokenTracker.UpdateUI()
     elseif command == "show" then
         if mainFrame then mainFrame:Show() end
     elseif command == "hide" then

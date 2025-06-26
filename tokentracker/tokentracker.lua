@@ -1,5 +1,5 @@
 -- TokenTracker - A World of Warcraft AddOn to track gold earned for a WoW Token.
--- Author: Allyny747
+-- Author: Allnyn747
 -- Version: 0.1
 -- Interface: 110107 (The War Within)
 -- SavedVariables: TokenTrackerData
@@ -51,15 +51,15 @@ end
 -- Function to update UI
 local function InternalUpdateUI()
     if not mainFrame then
-        PrintMessage("DEBUG: UI not ready in UpdateUI()")
+        PrintMessage("DEBUG: UI not ready in UpdateUI()") -- ACTIVE: This is an error message.
         return
     end
 
     local earnedText = "Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, false)
     local targetDisplay = "Target: " .. FormatGold(TokenTrackerData.targetPrice, false)
 
-    PrintMessage("DEBUG: UpdateUI - " .. earnedText .. " | " .. targetDisplay)
-
+    -- PrintMessage("DEBUG: UpdateUI - " .. earnedText .. " | " .. targetDisplay) -- COMMENTED OUT: Not an error.
+    
     goldEarnedText:SetText(" ")  -- Force redraw
     goldEarnedText:SetText(earnedText)
     targetText:SetText(targetDisplay)
@@ -116,7 +116,6 @@ end
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
     if event == "ADDON_LOADED" and addonName == "TokenTracker" then
-        -- Wait for PLAYER_LOGIN to initialize UI fully
         PrintMessage("Addon loaded, waiting for PLAYER_LOGIN to initialize UI.")
 
     elseif event == "PLAYER_LOGIN" then
@@ -130,9 +129,9 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         stopButton = TokenTrackerStopButton
 
         if mainFrame and goldEarnedText then
-            PrintMessage("DEBUG: UI elements assigned at PLAYER_LOGIN.")
+            -- PrintMessage("DEBUG: UI elements assigned at PLAYER_LOGIN.") -- COMMENTED OUT: Not an error.
         else
-            PrintMessage("DEBUG: ERROR - UI elements NOT found at PLAYER_LOGIN.")
+            PrintMessage("DEBUG: ERROR - UI elements NOT found at PLAYER_LOGIN.") -- ACTIVE: This is an error message.
         end
 
         mainFrame:SetBackdrop({

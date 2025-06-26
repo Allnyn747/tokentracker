@@ -1,0 +1,6 @@
+## Interface: 110107
+## Title: TokenTracker
+## Notes: Helps you track gold earned for a WoW Token.
+## Author: Allnyn747
+## Version: 0.1
+tokentracker.lua

@@ -1,0 +1,23 @@
+# Cache and metadata files
+*.bak
+*.old
+*.obj
+*.rej
+*.cache
+*.swp
+*.orig
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Common programming IDE files
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.idea/
+
+# WoW specific files
+WTF/
+Interface/
+AddOns/*.zip
+!AddOns/tokentracker/  # Exclude all addons except tokentracker

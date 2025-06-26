@@ -177,6 +177,15 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         stopButton = TokenTrackerStopButton
         minimapButton = TokenTrackerMinimapButton
 
+local icon = _G["TokenTrackerMinimapButtonIcon"] or minimapButton:GetNormalTexture()
+if icon then
+    icon:SetTexture("Interface\\Icons\\WoW_Token01")
+    icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    PrintMessage("Minimap button icon texture set successfully.")
+else
+    PrintMessage("DEBUG: Minimap button icon NOT found.")
+end
+
         if mainFrame and goldEarnedText and minimapButton then
             PrintMessage("TokenTracker UI elements found and assigned in Lua.")
         else

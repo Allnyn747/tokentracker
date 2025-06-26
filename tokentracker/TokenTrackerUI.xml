@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 UI_Frame.xsd">
-    <Frame name="TokenTrackerFrame" toplevel="true" movable="true" enableMouse="true" parent="UIParent" frameStrata="MEDIUM">
+    <Frame name="TokenTrackerFrame" inherits="BackdropTemplate" toplevel="true" movable="true" enableMouse="true" parent="UIParent" frameStrata="MEDIUM">
         <Size x="250" y="180"/>
         <Anchors>
             <Anchor point="CENTER"/>

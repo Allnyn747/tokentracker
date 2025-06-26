@@ -1,43 +1,37 @@
 -- TokenTracker - A World of Warcraft AddOn to track gold earned for a WoW Token.
--- Author: Allnyn747
+-- Author: Allyny747
 -- Version: 0.1
 -- Interface: 110107 (The War Within)
--- SavedVariables: TokenTrackerData (Declared in .toc file for persistent storage)
+-- SavedVariables: TokenTrackerData
+-- Loads: TokenTrackerUI.xml
 
--- Define a global table for our add-on's data and functions to avoid polluting the global namespace.
 TokenTracker = {}
-
--- Initialize TokenTrackerData. WoW automatically loads this table from SavedVariables.lua.
--- If this is the first time the addon runs (or after a SavedVariables reset),
--- TokenTrackerData will be nil, so we initialize it as an empty table.
 TokenTrackerData = TokenTrackerData or {}
 
--- Ensure all necessary fields exist in TokenTrackerData,
--- providing default values if they are missing. This handles first-time use
--- or future updates where new variables are added.
-if TokenTrackerData.sessionStartGold == nil then
-    TokenTrackerData.sessionStartGold = 0          -- Gold amount when tracking officially "started"
-end
-if TokenTrackerData.totalEarnedSinceStart == nil then
-    TokenTrackerData.totalEarnedSinceStart = 0      -- Total gold earned since the "Start Farming" command was last used
-end
-if TokenTrackerData.isTrackingActive == nil then
-    TokenTrackerData.isTrackingActive = false       -- Is farming tracking currently active?
-end
-if TokenTrackerData.lastKnownGold == nil then
-    TokenTrackerData.lastKnownGold = 0              -- Last recorded gold amount to calculate changes
-end
-if TokenTrackerData.targetPrice == nil then
-    TokenTrackerData.targetPrice = 0                -- Target gold amount for the token (in copper)
-end
+-- Initialize SavedVariables fields
+if TokenTrackerData.sessionStartGold == nil then TokenTrackerData.sessionStartGold = 0 end
+if TokenTrackerData.totalEarnedSinceStart == nil then TokenTrackerData.totalEarnedSinceStart = 0 end
+if TokenTrackerData.isTrackingActive == nil then TokenTrackerData.isTrackingActive = false end
+if TokenTrackerData.lastKnownGold == nil then TokenTrackerData.lastKnownGold = 0 end
+if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
+if TokenTrackerData.framePosition == nil then TokenTrackerData.framePosition = { x = 0, y = 0 } end
+if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
 
+-- UI Element References
+local mainFrame
+local statusText
+local goldEarnedText
+local targetText
+local progressText
+local startButton
+local stopButton
 
--- Function to display messages in the chat frame.
+-- Chat message function
 local function PrintMessage(message)
-    print("|cff00ff99[TokenTracker]|r " .. message) -- Green color for messages
+    print("|cff00ff99[TokenTracker]|r " .. message)
 end
 
--- Function to format copper into gold/silver/copper string with color codes.
+-- Gold formatting function
 local function FormatGold(copperAmount)
     local sign = ""
     if copperAmount < 0 then
@@ -50,91 +44,155 @@ local function FormatGold(copperAmount)
     return sign .. string.format("|cffFFD700%d|r|cffC0C0C0%d|r|cffCD7F32%d|r", gold, silver, copper)
 end
 
--- Create a frame to register for events. All WoW events must be registered to a frame.
-local eventFrame = CreateFrame("Frame")
+-- UI update function
+local function UpdateUI()
+    if not mainFrame then return end
 
--- Event handler for PLAYER_LOGIN. This is called when the player logs into the game world.
-local function OnLogin(self, event, ...)
-    -- Set the last known gold to the current gold when logging in.
-    -- This ensures accurate calculation of gold changes after a game restart.
-    TokenTrackerData.lastKnownGold = GetMoney()
-    PrintMessage("Addon loaded. Current character gold: " .. FormatGold(GetMoney()))
+    goldEarnedText:SetText("Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
+    targetText:SetText("Target: " .. FormatGold(TokenTrackerData.targetPrice))
 
     if TokenTrackerData.isTrackingActive then
-        PrintMessage("Farming session is currently active (persisted). Gold earned so far: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
+        statusText:SetText("Status: Active")
+        statusText:SetTextColor(0, 1, 0)
+        startButton:Disable()
+        stopButton:Enable()
     else
-        PrintMessage("Farming session is currently inactive (persisted).")
+        statusText:SetText("Status: Inactive")
+        statusText:SetTextColor(1, 0, 0)
+        startButton:Enable()
+        stopButton:Disable()
     end
 
-    -- If a target price is set, display it on login.
     if TokenTrackerData.targetPrice > 0 then
-        PrintMessage("Target token price set to: " .. FormatGold(TokenTrackerData.targetPrice))
+        local remainingGold = TokenTrackerData.targetPrice - TokenTrackerData.totalEarnedSinceStart
+        if remainingGold < 0 then remainingGold = 0 end
+        progressText:SetText("Progress: Remaining " .. FormatGold(remainingGold))
+    else
+        progressText:SetText("Progress: N/A (Set target with /tt target)")
     end
 end
 
--- Event handler for PLAYER_MONEY. This event fires whenever player's money changes.
-local function OnMoneyChanged(self, event, ...)
-    local currentGold = GetMoney()
-    local goldChange = currentGold - TokenTrackerData.lastKnownGold
+-- TokenTracker core functions
+function TokenTracker.StartFarming()
+    if TokenTrackerData.isTrackingActive then
+        PrintMessage("Farming session is already active!")
+    else
+        TokenTrackerData.sessionStartGold = GetMoney()
+        TokenTrackerData.totalEarnedSinceStart = 0
+        TokenTrackerData.isTrackingActive = true
+        PrintMessage("Farming session started! Current gold: " .. FormatGold(TokenTrackerData.sessionStartGold))
+    end
+    UpdateUI()
+end
 
-    -- Only process if there's an actual change in gold.
-    if goldChange ~= 0 then
-        -- Only update the total earned if tracking is currently active.
-        if TokenTrackerData.isTrackingActive then
-            TokenTrackerData.totalEarnedSinceStart = TokenTrackerData.totalEarnedSinceStart + goldChange
-            -- Optional: Uncomment the line below if you want real-time updates for every gold change.
-            -- PrintMessage("Gold changed by: " .. FormatGold(goldChange) .. ". Total tracked: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
+function TokenTracker.StopFarming()
+    if not TokenTrackerData.isTrackingActive then
+        PrintMessage("Farming session is not active.")
+    else
+        TokenTrackerData.isTrackingActive = false
+        PrintMessage("Farming session stopped.")
+        PrintMessage("Total gold tracked for this session: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
+    end
+    UpdateUI()
+end
+
+-- Event handling frame
+local eventFrame = CreateFrame("Frame")
+
+-- Main OnEvent handler
+eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
+    if event == "ADDON_LOADED" and addonName == "TokenTracker" then
+        mainFrame = TokenTrackerFrame
+        statusText = TokenTrackerStatusText
+        goldEarnedText = TokenTrackerGoldEarnedText
+        targetText = TokenTrackerTargetText
+        progressText = TokenTrackerProgressText
+        startButton = TokenTrackerStartButton
+        stopButton = TokenTrackerStopButton
+
+        -- Set backdrop programmatically
+        mainFrame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 32,
+            insets = { left = 11, right = 12, top = 12, bottom = 11 }
+        })
+        mainFrame:SetBackdropColor(0, 0, 0, 0.8)
+        mainFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
+
+        -- Set button click handlers
+        startButton:SetScript("OnClick", TokenTracker.StartFarming)
+        stopButton:SetScript("OnClick", TokenTracker.StopFarming)
+
+        -- Set scripts for frame visibility and movement to save state
+        mainFrame:SetScript("OnHide", function() TokenTrackerData.frameVisible = false end)
+        mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
+        mainFrame:SetScript("OnStopMovingOrSizing", function()
+            local _, _, _, x, y = mainFrame:GetPoint("CENTER", UIParent)
+            TokenTrackerData.framePosition.x = x
+            TokenTrackerData.framePosition.y = y
+        end)
+
+        -- Apply saved position
+        mainFrame:SetPoint("CENTER", UIParent, "CENTER", TokenTrackerData.framePosition.x, TokenTrackerData.framePosition.y)
+
+        -- Apply saved visibility
+        if TokenTrackerData.frameVisible then
+            mainFrame:Show()
+        else
+            mainFrame:Hide()
         end
-        -- Always update lastKnownGold to ensure subsequent changes are calculated correctly.
-        TokenTrackerData.lastKnownGold = currentGold
-    end
-end
 
--- Register events to our eventFrame.
-eventFrame:RegisterEvent("PLAYER_LOGIN")
-eventFrame:RegisterEvent("PLAYER_MONEY")
+        UpdateUI()
+    elseif event == "PLAYER_LOGIN" then
+        TokenTrackerData.lastKnownGold = GetMoney()
+        PrintMessage("Addon loaded. Current character gold: " .. FormatGold(GetMoney()))
 
--- Set the OnEvent script for the frame, routing events to specific handlers.
-eventFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" then
-        OnLogin(self, event, ...)
+        if TokenTrackerData.isTrackingActive then
+            PrintMessage("Farming session is currently active (persisted). Gold earned so far: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
+        else
+            PrintMessage("Farming session is currently inactive (persisted).")
+        end
+
+        if TokenTrackerData.targetPrice > 0 then
+            PrintMessage("Target token price set to: " .. FormatGold(TokenTrackerData.targetPrice))
+        end
+        UpdateUI()
     elseif event == "PLAYER_MONEY" then
-        OnMoneyChanged(self, event, ...)
+        local currentGold = GetMoney()
+        local goldChange = currentGold - TokenTrackerData.lastKnownGold
+
+        if goldChange ~= 0 then
+            if TokenTrackerData.isTrackingActive then
+                TokenTrackerData.totalEarnedSinceStart = TokenTrackerData.totalEarnedSinceStart + goldChange
+            end
+            TokenTrackerData.lastKnownGold = currentGold
+            UpdateUI()
+        end
     end
 end)
 
--- Chat command handler.
--- We'll register slash commands that users can type in chat.
-SLASH_TOKENTRACKER1 = "/tt"         -- Primary slash command
-SLASH_TOKENTRACKER2 = "/tokentracker" -- Alternative slash command
+-- Register events
+eventFrame:RegisterEvent("ADDON_LOADED")
+eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:RegisterEvent("PLAYER_MONEY")
+
+
+-- Chat command handler
+SLASH_TOKENTRACKER1 = "/tt"
+SLASH_TOKENTRACKER2 = "/tokentracker"
 
 local function HandleSlashCommand(msg, editbox)
-    -- Split the command message into arguments.
     local args = { string.split(" ", msg) }
-    local command = string.lower(args[1] or "") -- Get the first argument (command), convert to lowercase
+    local command = string.lower(args[1] or "")
 
     if command == "start" then
-        if TokenTrackerData.isTrackingActive then
-            PrintMessage("Farming session is already active!")
-            PrintMessage("Gold earned so far this session: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
-        else
-            -- Record current gold as the starting point for this farming session.
-            -- This ensures subsequent calculations are relative to this point.
-            TokenTrackerData.sessionStartGold = GetMoney()
-            TokenTrackerData.totalEarnedSinceStart = 0 -- Reset total earned for the new session
-            TokenTrackerData.isTrackingActive = true
-            PrintMessage("Farming session started! Current gold: " .. FormatGold(TokenTrackerData.sessionStartGold))
-        end
+        TokenTracker.StartFarming()
     elseif command == "stop" then
-        if not TokenTrackerData.isTrackingActive then
-            PrintMessage("Farming session is not active.")
-        else
-            TokenTrackerData.isTrackingActive = false
-            PrintMessage("Farming session stopped.")
-            PrintMessage("Total gold tracked for this session: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
-        end
+        TokenTracker.StopFarming()
     elseif command == "status" or command == "" then
-        -- Display current character gold and session tracking status.
         PrintMessage("Current character gold: " .. FormatGold(GetMoney()))
         if TokenTrackerData.isTrackingActive then
             PrintMessage("Farming session is active. Gold earned so far: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
@@ -142,9 +200,7 @@ local function HandleSlashCommand(msg, editbox)
             PrintMessage("Farming session is inactive. Last tracked amount: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart))
         end
     elseif command == "reset" then
-        -- This command resets the *accumulated* gold for the current (or next) farming session.
-        -- It does NOT stop an active session; it just zeroes out the tracked amount.
-        TokenTrackerData.sessionStartGold = GetMoney() -- Reset start gold to current for a new baseline
+        TokenTrackerData.sessionStartGold = GetMoney()
         TokenTrackerData.totalEarnedSinceStart = 0
         PrintMessage("Total tracked gold has been reset.")
         if TokenTrackerData.isTrackingActive then
@@ -152,33 +208,43 @@ local function HandleSlashCommand(msg, editbox)
         else
             PrintMessage("Farming session remains inactive.")
         end
+        UpdateUI()
     elseif command == "target" then
-        local valueStr = args[2] -- Get the second argument (the target amount)
+        local valueStr = args[2]
         if valueStr then
-            local newTarget = tonumber(valueStr) -- Convert string to number
+            local newTarget = tonumber(valueStr)
             if newTarget and newTarget >= 0 then
-                TokenTrackerData.targetPrice = newTarget * 10000 -- Store target in copper (1 gold = 10000 copper)
+                TokenTrackerData.targetPrice = newTarget * 10000
                 PrintMessage("Target gold for token set to: " .. FormatGold(TokenTrackerData.targetPrice))
             else
                 PrintMessage("Invalid target price. Please enter a positive number (e.g., '/tt target 10000').")
+            -- Removed the problematic line here
             end
         else
-            -- If no argument provided, show current target.
             PrintMessage("Current target gold for token: " .. FormatGold(TokenTrackerData.targetPrice))
             PrintMessage("Usage: /tt target <gold_amount>")
         end
+        UpdateUI()
     elseif command == "progress" then
-        -- Show progress towards the set target.
         if TokenTrackerData.targetPrice > 0 then
             local remainingGold = TokenTrackerData.targetPrice - TokenTrackerData.totalEarnedSinceStart
-            if remainingGold < 0 then remainingGold = 0 end -- Ensure remaining isn't negative for display
+            if remainingGold < 0 then remainingGold = 0 end
             PrintMessage("Progress towards target (" .. FormatGold(TokenTrackerData.targetPrice) .. "):")
             PrintMessage("Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart) .. " | Remaining: " .. FormatGold(remainingGold))
         else
             PrintMessage("No target price set. Use '/tt target <gold_amount>' to set one.")
         end
+    elseif command == "show" then
+        if mainFrame then
+            mainFrame:Show()
+            PrintMessage("TokenTracker frame shown.")
+        end
+    elseif command == "hide" then
+        if mainFrame then
+            mainFrame:Hide()
+            PrintMessage("TokenTracker frame hidden.")
+        end
     elseif command == "help" then
-        -- Display all available commands.
         PrintMessage("Available commands:")
         PrintMessage("/tt or /tokentracker - Show current status.")
         PrintMessage("/tt start - Start a new farming session.")
@@ -186,20 +252,19 @@ local function HandleSlashCommand(msg, editbox)
         PrintMessage("/tt reset - Reset total tracked gold for the current session.")
         PrintMessage("/tt target <amount> - Set a gold target for the token (e.g., /tt target 200000).")
         PrintMessage("/tt progress - Show progress towards the set target.")
+        PrintMessage("/tt show - Show the TokenTracker UI frame.")
+        PrintMessage("/tt hide - Hide the TokenTracker UI frame.")
         PrintMessage("/tt help - Show this help message.")
     else
         PrintMessage("Unknown command. Type '/tt help' for a list of commands.")
     end
 end
 
--- Register the slash command handler with WoW.
 SlashCmdList["TOKENTRACKER"] = HandleSlashCommand
 
--- Filter out WoW's default "unknown command" messages when our addon handles them.
 ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", function(self, event, msg, ...)
-    -- Check if the message contains our slash commands.
     if string.find(msg, "/tt", 1, true) or string.find(msg, "/tokentracker", 1, true) then
-        return true -- Return true to "eat" the message and prevent it from being displayed by WoW.
+        return true
     end
-    return false -- Return false to allow other messages to be displayed normally.
+    return false
 end)

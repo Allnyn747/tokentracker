@@ -136,7 +136,7 @@ function TokenTracker_MinimapButton_OnClick(self, button)
     if button == "LeftButton" then
         TokenTracker.ToggleMainFrame()
     elseif button == "RightButton" then
-        TokenTracker.ShowOptions()
+        TokenTracker.ShowOptions() -- This will now call the new function to show help
     end
 end
 
@@ -207,9 +207,87 @@ function TokenTracker.ToggleMainFrame()
     end
 end
 
-function TokenTracker.ShowOptions()
-    PrintMessage("Right-click on minimap button: Options (Not yet implemented).")
+-- --- START OF NEW/MODIFIED CODE ---
+local TokenTrackerHelpFrame -- This will hold your help frame reference
+
+-- Function to create the help display frame (called once, when first needed)
+local function CreateTokenTrackerHelpFrame()
+    TokenTrackerHelpFrame = CreateFrame("Frame", "TokenTrackerHelpFrame", UIParent, "BasicFrameTemplate");
+    TokenTrackerHelpFrame:SetSize(400, 250); -- Adjust size as needed
+    TokenTrackerHelpFrame:SetPoint("CENTER");
+    TokenTrackerHelpFrame:SetMovable(true);
+    TokenTrackerHelpFrame:EnableMouse(true);
+    TokenTrackerHelpFrame:RegisterForDrag("LeftButton");
+    TokenTrackerHelpFrame:SetScript("OnDragStart", TokenTrackerHelpFrame.StartMoving);
+    TokenTrackerHelpFrame:SetScript("OnDragStop", TokenTrackerHelpFrame.StopMovingOrSizing);
+
+    -- Title
+    TokenTrackerHelpFrame.TitleText = TokenTrackerHelpFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    TokenTrackerHelpFrame.TitleText:SetPoint("TOP", 0, -6);
+    TokenTrackerHelpFrame.TitleText:SetText("TokenTracker Commands");
+
+    -- ScrollFrame to hold the text
+    local scrollFrame = CreateFrame("ScrollFrame", "$parentScrollFrame", TokenTrackerHelpFrame, "UIPanelScrollFrameTemplate");
+    scrollFrame:SetPoint("TOPLEFT", 10, -25);
+    scrollFrame:SetPoint("BOTTOMRIGHT", -29, 10);
+    scrollFrame:SetClipsChildren(true);
+
+    -- NEW: Create a container frame for the text
+    local textContainer = CreateFrame("Frame", nil, scrollFrame);
+    textContainer:SetSize(10, 10); -- Dummy size, will adjust with font string
+    textContainer:SetPoint("TOPLEFT", 0, 0);
+    textContainer:SetPoint("TOPRIGHT", 0, 0);
+
+    -- FontString to display the actual text
+    local text = textContainer:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
+    text:SetPoint("TOPLEFT", 5, -5);
+    text:SetPoint("BOTTOMRIGHT", -5, 5);
+    text:SetJustifyH("LEFT");
+    text:SetJustifyV("TOP");
+    text:SetNonSpaceWrap(true);
+    text:SetMaxLines(0); -- Allow unlimited lines
+    -- IMPORTANT: FontString needs to manage its own height based on content for scrolling
+    text:SetHeight(0); -- Start with 0 height, it will expand with text
+    textContainer:SetHeight(0); -- Container will match text height
+
+    -- Set the container frame as the scroll child
+    scrollFrame:SetScrollChild(textContainer);
+
+    TokenTrackerHelpFrame.text = text; -- Keep reference to the font string for setting text
+
+    -- Add a close button
+    local closeButton = CreateFrame("Button", "$parentCloseButton", TokenTrackerHelpFrame, "UIPanelButtonTemplate");
+    closeButton:SetText("Close");
+    closeButton:SetSize(70, 22);
+    closeButton:SetPoint("BOTTOM", 0, 8);
+    closeButton:SetScript("OnClick", function() TokenTrackerHelpFrame:Hide(); end);
 end
+
+-- MODIFIED: This is the function that TokenTracker_MinimapButton_OnClick now calls for a right-click
+function TokenTracker.ShowOptions()
+    if not TokenTrackerHelpFrame then
+        CreateTokenTrackerHelpFrame();
+    end
+
+    -- Clear existing text
+    TokenTrackerHelpFrame.text:SetText("");
+
+    -- Hardcode the commands you provided for reliable display
+    local helpText = ""
+    helpText = helpText .. "|cffffffff[TokenTracker]|r Available commands:\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt start - Start a new session.\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt stop - Stop the session.\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt reset - Reset earned gold.\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt target <amount> - Set goal.\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt progress - Show progress.\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt show | /tt hide - Toggle UI.\n"
+    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt help - Show this list."
+
+    TokenTrackerHelpFrame.text:SetText(helpText);
+    TokenTrackerHelpFrame:Show();
+end
+-- --- END OF NEW/MODIFIED CODE ---
+
 
 -- UPDATED: Save minimap button position with circular positioning
 function TokenTracker.SaveMinimapButtonPosition()
@@ -223,10 +301,10 @@ function TokenTracker.SaveMinimapButtonPosition()
 
         TokenTrackerData.MinimapButtonPosition = {
             point = point or "CENTER",
-            relativeTo = relativeToName or "Minimap",  -- Changed from "UIParent"
-            relativePoint = relativePoint or "CENTER", -- Changed from "BOTTOMLEFT"
-            x = x or 80,  -- Changed default
-            y = y or 0    -- Changed default
+            relativeTo = relativeToName or "Minimap", 
+            relativePoint = relativePoint or "CENTER",
+            x = x or 80, 
+            y = y or 0
         }
     end
 end
@@ -370,7 +448,7 @@ local function HandleSlashCommand(msg, editbox)
             if remainingGold < 0 then remainingGold = 0 end
             PrintMessage("Progress to target (" .. FormatGold(TokenTrackerData.targetPrice, true) .. "):")
             PrintMessage("Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, true) ..
-                                     " | Remaining: " .. FormatGold(remainingGold, true))
+                                         " | Remaining: " .. FormatGold(remainingGold, true))
         else
             PrintMessage("No target set. Use '/tt target <amount>'.")
         end
@@ -380,6 +458,7 @@ local function HandleSlashCommand(msg, editbox)
     elseif command == "hide" then
         if TokenTracker.mainFrame then TokenTracker.mainFrame:Hide() end
     elseif command == "help" then
+        -- This is the slash command help, which you may want to keep
         PrintMessage("Available commands:")
         PrintMessage("/tt start - Start a new session.")
         PrintMessage("/tt stop - Stop the session.")

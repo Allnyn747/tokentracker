@@ -95,8 +95,12 @@
             <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
             <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>
             <OnLeave>TokenTracker_MinimapButton_OnLeave(self)</OnLeave>
-            <OnDragStop>TokenTracker_MinimapButton_OnDragStop(self)</OnDragStop>
             <OnClick>TokenTracker_MinimapButton_OnClick(self, button)</OnClick>
+            <OnDragStart> self:StartMoving() </OnDragStart>
+            <OnDragStop>
+                self:StopMovingOrSizing()
+                TokenTracker_MinimapButton_OnDragStop(self)
+            </OnDragStop>
         </Scripts>
     </Button>
 

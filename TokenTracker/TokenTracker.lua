@@ -111,7 +111,6 @@ end
 function TokenTracker_MinimapButton_OnLoad(self)
     -- Assign the button reference to the TokenTracker table for global access
     TokenTracker.MinimapButtonFrame = self
-    print("DEBUG: TokenTracker_MinimapButton_OnLoad is executing.") -- DEBUG LINE for confirmation
     self:EnableMouse(true)
     self:SetMovable(true)
     self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
@@ -125,7 +124,6 @@ function TokenTracker_MinimapButton_OnLoad(self)
     if iconTexture then
         iconTexture:SetTexture("Interface\\Icons\\WoW_Token01")
         iconTexture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-        PrintMessage("Minimap button icon texture set successfully.")
     else
         PrintMessage("DEBUG: Minimap button icon NOT found for setting texture.")
     end
@@ -201,10 +199,8 @@ function TokenTracker.ToggleMainFrame()
     if TokenTracker.mainFrame then
         if TokenTracker.mainFrame:IsShown() then
             TokenTracker.mainFrame:Hide()
-            PrintMessage("TokenTracker UI Hidden.")
         else
             TokenTracker.mainFrame:Show()
-            PrintMessage("TokenTracker UI Shown.")
         end
     else
         PrintMessage("DEBUG: Attempted to toggle mainFrame, but it's not assigned yet.")
@@ -248,7 +244,6 @@ function TokenTracker.LoadMinimapButtonPosition()
         else
             -- Default position on minimap edge
             TokenTracker.MinimapButtonFrame:SetPoint("CENTER", Minimap, "CENTER", 80, 0)
-            PrintMessage("DEBUG: Minimap button set to default position on minimap edge.")
         end
     end
 end
@@ -259,8 +254,6 @@ end
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
     if event == "ADDON_LOADED" and addonName == "TokenTracker" then
-        PrintMessage("Addon loaded, waiting for PLAYER_LOGIN to initialize UI.")
-
     elseif event == "PLAYER_LOGIN" then
         -- Assign UI elements to the TokenTracker table for global access
         TokenTracker.mainFrame = TokenTrackerFrame
@@ -277,7 +270,7 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         end
 
         if TokenTracker.mainFrame and TokenTracker.goldEarnedText and TokenTracker.MinimapButtonFrame then
-            PrintMessage("TokenTracker UI elements found and assigned in Lua.")
+
         else
             PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN.")
         end

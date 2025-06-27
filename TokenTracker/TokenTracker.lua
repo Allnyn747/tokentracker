@@ -207,50 +207,8 @@ function TokenTracker.ToggleMainFrame()
     end
 end
 
--- --- START OF NEW/MODIFIED CODE ---
-local TokenTrackerHelpFrame -- This will hold your help frame reference
-
--- Function to create the help display frame (called once, when first needed)
-local function CreateTokenTrackerHelpFrame()
-    TokenTrackerHelpFrame = CreateFrame("Frame", "TokenTrackerHelpFrame", UIParent, "BasicFrameTemplate");
-    TokenTrackerHelpFrame:SetSize(400, 250); -- Adjust size as needed for ALL text
-    TokenTrackerHelpFrame:SetPoint("CENTER");
-    TokenTrackerHelpFrame:SetMovable(true);
-    TokenTrackerHelpFrame:EnableMouse(true);
-    TokenTrackerHelpFrame:RegisterForDrag("LeftButton");
-    TokenTrackerHelpFrame:SetScript("OnDragStart", TokenTrackerHelpFrame.StartMoving);
-    TokenTrackerHelpFrame:SetScript("OnDragStop", TokenTrackerHelpFrame.StopMovingOrSizing);
-
-    -- Title
-    TokenTrackerHelpFrame.TitleText = TokenTrackerHelpFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal");
-    TokenTrackerHelpFrame.TitleText:SetPoint("TOP", 0, -6);
-    TokenTrackerHelpFrame.TitleText:SetText("TokenTracker Commands");
-
-    -- FontString to display the actual text - placed directly on the main frame
-    local text = TokenTrackerHelpFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
-    text:SetPoint("TOPLEFT", 15, -30); -- Adjust these points to give padding inside the frame
-    text:SetPoint("BOTTOMRIGHT", -15, 40); -- Adjust these points to give padding and make space for the close button
-    text:SetJustifyH("LEFT");
-    text:SetJustifyV("TOP");
-    text:SetNonSpaceWrap(true);
-    text:SetMaxLines(0); -- Allow unlimited lines (will simply expand vertically or clip if frame is too small)
-
-    TokenTrackerHelpFrame.text = text; -- Keep reference to the font string for setting text
-
-    -- Add a close button
-    local closeButton = CreateFrame("Button", "$parentCloseButton", TokenTrackerHelpFrame, "UIPanelButtonTemplate");
-    closeButton:SetText("Close");
-    closeButton:SetSize(70, 22);
-    closeButton:SetPoint("BOTTOM", 0, 8);
-    closeButton:SetScript("OnClick", function() TokenTrackerHelpFrame:Hide(); end);
-end
-
 -- MODIFIED: This is the function that TokenTracker_MinimapButton_OnClick now calls for a right-click
 function TokenTracker.ShowOptions()
-    if not TokenTrackerHelpFrame then
-        CreateTokenTrackerHelpFrame();
-    end
-
     -- Clear existing text
     TokenTrackerHelpFrame.text:SetText("");
 
@@ -266,11 +224,6 @@ function TokenTracker.ShowOptions()
     helpText = helpText .. "|cffffffff[TokenTracker]|r /tt help - Show this list."
 
     TokenTrackerHelpFrame.text:SetText(helpText);
-    
-    -- No need for height/width adjustments related to scrolling
-    -- The FontString will automatically size its height based on its fixed width points
-    -- and MaxLines(0), then the parent frame will clip if it's too small.
-
     TokenTrackerHelpFrame:Show();
 end
 -- --- END OF NEW/MODIFIED CODE ---
@@ -328,6 +281,7 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         TokenTracker.progressText = TokenTrackerProgressText
         TokenTracker.startButton = TokenTrackerStartButton
         TokenTracker.stopButton = TokenTrackerStopButton
+        TokenTrackerHelpFrame.text = _G["TokenTrackerHelpFrameMainContentText"]
         -- TokenTracker.MinimapButtonFrame is assigned in its OnLoad, but we can double check here for safety
         if not TokenTracker.MinimapButtonFrame then
             TokenTracker.MinimapButtonFrame = TokenTrackerMinimapButton
@@ -335,11 +289,12 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         end
 
         if TokenTracker.mainFrame and TokenTracker.goldEarnedText and TokenTracker.MinimapButtonFrame then
-
+            -- No action needed here, just condition check
         else
             PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN.")
         end
 
+        -- Set backdrop for TokenTracker.mainFrame
         TokenTracker.mainFrame:SetBackdrop({
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
@@ -349,6 +304,18 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         })
         TokenTracker.mainFrame:SetBackdropColor(0, 0, 0, 0.8)
         TokenTracker.mainFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
+
+        -- ADDED: Set backdrop for TokenTrackerHelpFrame
+        TokenTrackerHelpFrame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true, tileSize = 32,
+            edgeSize = 32,
+            insets = { left = 11, right = 12, top = 12, bottom = 11 }
+        })
+        TokenTrackerHelpFrame:SetBackdropColor(0, 0, 0, 0.8)
+        TokenTrackerHelpFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
+
 
         TokenTracker.startButton:SetScript("OnClick", TokenTracker.StartFarming)
         TokenTracker.stopButton:SetScript("OnClick", TokenTracker.StopFarming)

@@ -75,7 +75,49 @@
         </Frames>
     </Frame>
 
-<Button name="TokenTrackerMinimapButton"
+<Frame name="TokenTrackerHelpFrame" inherits="BackdropTemplate" parent="UIParent" toplevel="true" movable="true" enableMouse="true" frameStrata="DIALOG" hidden="true">
+        <Size x="400" y="250"/>
+        <Anchors>
+            <Anchor point="CENTER"/>
+        </Anchors>
+        
+        <Scripts>
+            <OnDragStart> self:StartMoving(); </OnDragStart>
+            <OnDragStop> self:StopMovingOrSizing(); </OnDragStop>
+        </Scripts>
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString name="$parentTitleText" inherits="GameFontNormal" text="TokenTracker Commands">
+                    <Anchors>
+                        <Anchor point="TOP" x="0" y="-6"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+            <Layer level="ARTWORK">
+                <FontString name="$parentMainContentText" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="0" justifyH="LEFT" justifyV="TOP">
+                                        <Anchors>
+                        <Anchor point="TOPLEFT" x="15" y="-30"/>
+                        <Anchor point="BOTTOMRIGHT" x="-15" y="40"/>
+                    </Anchors>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Frames>
+            <Button name="$parentCloseButton" inherits="UIPanelButtonTemplate" text="Close">
+                <Size x="70" y="22"/>
+                <Anchors>
+                    <Anchor point="BOTTOM" x="0" y="8"/>
+                </Anchors>
+                <Scripts>
+                    <OnClick>
+                        self:GetParent():Hide();
+                    </OnClick>
+                </Scripts>
+            </Button>
+        </Frames>
+    </Frame>
+
+    <Button name="TokenTrackerMinimapButton"
         parent="UIParent"
         toplevel="true"
         movable="true"

@@ -1,3 +1,6 @@
+print("##### USER'S KNOWN GOOD LUA FILE LOADED & EDITED #####") -- Your specific identifier, updated
+print("DEBUG: TokenTracker.lua has started loading.") -- DEBUG LINE 1
+
 -- TokenTracker - A World of Warcraft AddOn to track gold earned for a WoW Token.
 -- Author: Allnyn747
 -- Version: 0.1
@@ -5,7 +8,7 @@
 -- SavedVariables: TokenTrackerData
 -- Loads: TokenTrackerUI.xml
 
-TokenTracker = {}
+TokenTracker = TokenTracker or {} -- Changed for robustness: use existing table if it exists
 TokenTrackerData = TokenTrackerData or {}
 
 -- Initialize SavedVariables fields with default values if they are missing.
@@ -17,15 +20,9 @@ if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
 if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
 if TokenTrackerData.MinimapButtonPosition == nil then TokenTrackerData.MinimapButtonPosition = nil end
 
--- UI Element References
-local mainFrame
-local statusText
-local goldEarnedText
-local targetText
-local progressText
-local startButton
-local stopButton
-local minimapButton -- Reference for the minimap button
+-- UI Element References (Now storing them directly in TokenTracker table for global access)
+-- Removed local declarations as they are now properties of the global TokenTracker table
+-- mainFrame, statusText, goldEarnedText, targetText, progressText, startButton, stopButton, minimapButton
 
 -- Chat message function
 local function PrintMessage(message)
@@ -51,34 +48,35 @@ end
 
 -- Function to update UI
 local function InternalUpdateUI()
-    if not mainFrame or not statusText or not goldEarnedText or not targetText or not progressText then
+    -- Use the references from the TokenTracker table
+    if not TokenTracker.mainFrame or not TokenTracker.statusText or not TokenTracker.goldEarnedText or not TokenTracker.targetText or not TokenTracker.progressText then
         return
     end
 
     local earnedText = "Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, false)
     local targetDisplay = "Target: " .. FormatGold(TokenTrackerData.targetPrice, false)
 
-    goldEarnedText:SetText(earnedText)
-    targetText:SetText(targetDisplay)
+    TokenTracker.goldEarnedText:SetText(earnedText)
+    TokenTracker.targetText:SetText(targetDisplay)
 
     if TokenTrackerData.isTrackingActive then
-        statusText:SetText("Status: Active")
-        statusText:SetTextColor(0, 1, 0) -- Green
-        startButton:Disable()
-        stopButton:Enable()
+        TokenTracker.statusText:SetText("Status: Active")
+        TokenTracker.statusText:SetTextColor(0, 1, 0) -- Green
+        TokenTracker.startButton:Disable()
+        TokenTracker.stopButton:Enable()
     else
-        statusText:SetText("Status: Inactive")
-        statusText:SetTextColor(1, 0, 0) -- Red
-        startButton:Enable()
-        stopButton:Disable()
+        TokenTracker.statusText:SetText("Status: Inactive")
+        TokenTracker.statusText:SetTextColor(1, 0, 0) -- Red
+        TokenTracker.startButton:Enable()
+        TokenTracker.stopButton:Disable()
     end
 
     if TokenTrackerData.targetPrice > 0 then
         local remainingGold = TokenTrackerData.targetPrice - TokenTrackerData.totalEarnedSinceStart
         if remainingGold < 0 then remainingGold = 0 end
-        progressText:SetText("Progress: Remaining " .. FormatGold(remainingGold, false))
+        TokenTracker.progressText:SetText("Progress: Remaining " .. FormatGold(remainingGold, false))
     else
-        progressText:SetText("Progress: N/A (Set target with /tt target)")
+        TokenTracker.progressText:SetText("Progress: N/A (Set target with /tt target)")
     end
 end
 
@@ -109,14 +107,89 @@ function TokenTracker.StopFarming()
     TokenTracker.UpdateUI()
 end
 
--- Minimap Button Functions
+-- Minimap Button Global Functions
+
+-- This function is called by the TokenTrackerMinimapButton's OnLoad handler in the XML.
+-- It's crucial for initializing the button's behavior and setting its global reference.
+function TokenTracker_MinimapButton_OnLoad(self)
+    -- Assign the button reference to the TokenTracker table for global access
+    TokenTracker.MinimapButtonFrame = self
+    print("DEBUG: TokenTracker_MinimapButton_OnLoad is executing.") -- DEBUG LINE for confirmation
+    self:EnableMouse(true)
+    self:SetMovable(true)
+    self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    self:RegisterForDrag("LeftButton")
+    self:SetClampedToScreen(true)
+    self:Show() -- ensures the button is visible
+    self:SetAlpha(1) -- Added to ensure full opacity
+
+    -- Set the icon texture here, as the button is now loaded
+    local iconTexture = _G["TokenTrackerMinimapButtonIcon"] or self:GetNormalTexture()
+    if iconTexture then
+        iconTexture:SetTexture("Interface\\Icons\\WoW_Token01")
+        iconTexture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        PrintMessage("Minimap button icon texture set successfully.")
+    else
+        PrintMessage("DEBUG: Minimap button icon NOT found for setting texture.")
+    end
+
+    TokenTracker.LoadMinimapButtonPosition() -- Load saved position
+end
+
+-- This function is called by the TokenTrackerMinimapButton's OnClick handler in the XML.
+function TokenTracker_MinimapButton_OnClick(self, button)
+    if button == "LeftButton" then
+        TokenTracker.ToggleMainFrame()
+    elseif button == "RightButton" then
+        TokenTracker.ShowOptions()
+    end
+end
+
+-- This function is called by the TokenTrackerMinimapButton's OnEnter handler in the XML.
+function TokenTracker_MinimapButton_OnEnter(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText("Token Tracker", nil, nil, nil, nil, true)
+    GameTooltip:AddLine("Left-click to toggle main frame", 1, 1, 1)
+    GameTooltip:AddLine("Right-click for options", 0.6, 0.6, 0.6)
+    GameTooltip:Show()
+end
+
+-- This function is called by the TokenTrackerMinimapButton's OnDragStop handler in the XML.
+function TokenTracker_MinimapButton_OnDragStop(self)
+    self:StopMovingOrSizing()
+
+    local mx, my = Minimap:GetCenter()
+    local px, py = self:GetCenter()
+    local radius = Minimap:GetWidth() / 2
+    local x, y = px - mx, py - my
+    local distance = math.sqrt(x * x + y * y)
+
+    if distance > radius then
+        local scale = radius / distance
+        x = x * scale
+        y = y * scale
+    end
+
+    self:ClearAllPoints()
+    self:SetPoint("CENTER", Minimap, "CENTER", x, y)
+    TokenTracker.SaveMinimapButtonPosition()
+end
+
+-- This function is called by the TokenTrackerMinimapButton's OnLeave handler in the XML.
+function TokenTracker_MinimapButton_OnLeave(self)
+    GameTooltip:Hide()
+end
+
+-- Other TokenTracker Functions
+
 function TokenTracker.ToggleMainFrame()
-    if mainFrame then
-        if mainFrame:IsShown() then
-            mainFrame:Hide()
+    -- Use the reference from the TokenTracker table
+    if TokenTracker.mainFrame then
+        if TokenTracker.mainFrame:IsShown() then
+            TokenTracker.mainFrame:Hide()
             PrintMessage("TokenTracker UI Hidden.")
         else
-            mainFrame:Show()
+            TokenTracker.mainFrame:Show()
             PrintMessage("TokenTracker UI Shown.")
         end
     else
@@ -129,8 +202,9 @@ function TokenTracker.ShowOptions()
 end
 
 function TokenTracker.SaveMinimapButtonPosition()
-    if minimapButton then
-        local point, relativeTo, relativePoint, x, y = minimapButton:GetPoint()
+    -- Use the reference from the TokenTracker table
+    if TokenTracker.MinimapButtonFrame then
+        local point, relativeTo, relativePoint, x, y = TokenTracker.MinimapButtonFrame:GetPoint()
         local relativeToName = nil
 
         if relativeTo and relativeTo.GetName then
@@ -148,102 +222,65 @@ function TokenTracker.SaveMinimapButtonPosition()
 end
 
 function TokenTracker.LoadMinimapButtonPosition()
-    if minimapButton then
+    -- Use the reference from the TokenTracker table
+    if TokenTracker.MinimapButtonFrame then
         if TokenTrackerData.MinimapButtonPosition then
             local pos = TokenTrackerData.MinimapButtonPosition
-            minimapButton:ClearAllPoints()
-            minimapButton:SetPoint(pos.point, _G[pos.relativeTo] or UIParent, pos.relativePoint, pos.x, pos.y)
+            TokenTracker.MinimapButtonFrame:ClearAllPoints()
+            TokenTracker.MinimapButtonFrame:SetPoint(pos.point, _G[pos.relativeTo] or UIParent, pos.relativePoint, pos.x, pos.y)
         else
             -- Default position on minimap edge
-            minimapButton:SetPoint("CENTER", Minimap, "CENTER", 80, -80)
+            TokenTracker.MinimapButtonFrame:SetPoint("CENTER", Minimap, "CENTER", 80, -80)
             PrintMessage("DEBUG: Minimap button set to default position on minimap edge.")
         end
     end
 end
 
--- Event frame
+-- Event Handling & Slash Commands
+
+-- Event frame for addon load and player money changes
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
     if event == "ADDON_LOADED" and addonName == "TokenTracker" then
         PrintMessage("Addon loaded, waiting for PLAYER_LOGIN to initialize UI.")
 
     elseif event == "PLAYER_LOGIN" then
-        mainFrame = TokenTrackerFrame
-        statusText = TokenTrackerStatusText
-        goldEarnedText = TokenTrackerGoldEarnedText
-        targetText = TokenTrackerTargetText
-        progressText = TokenTrackerProgressText
-        startButton = TokenTrackerStartButton
-        stopButton = TokenTrackerStopButton
-        minimapButton = TokenTrackerMinimapButton
+        -- Assign UI elements to the TokenTracker table for global access
+        TokenTracker.mainFrame = TokenTrackerFrame
+        TokenTracker.statusText = TokenTrackerStatusText
+        TokenTracker.goldEarnedText = TokenTrackerGoldEarnedText
+        TokenTracker.targetText = TokenTrackerTargetText
+        TokenTracker.progressText = TokenTrackerProgressText
+        TokenTracker.startButton = TokenTrackerStartButton
+        TokenTracker.stopButton = TokenTrackerStopButton
+        -- TokenTracker.MinimapButtonFrame is assigned in its OnLoad, but we can double check here for safety
+        if not TokenTracker.MinimapButtonFrame then
+            TokenTracker.MinimapButtonFrame = TokenTrackerMinimapButton
+            PrintMessage("DEBUG: Minimap button assigned at PLAYER_LOGIN (fallback).")
+        end
 
-local icon = _G["TokenTrackerMinimapButtonIcon"] or minimapButton:GetNormalTexture()
-if icon then
-    icon:SetTexture("Interface\\Icons\\WoW_Token01")
-    icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    PrintMessage("Minimap button icon texture set successfully.")
-else
-    PrintMessage("DEBUG: Minimap button icon NOT found.")
-end
-
-        if mainFrame and goldEarnedText and minimapButton then
+        if TokenTracker.mainFrame and TokenTracker.goldEarnedText and TokenTracker.MinimapButtonFrame then
             PrintMessage("TokenTracker UI elements found and assigned in Lua.")
         else
             PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN.")
         end
 
-        mainFrame:SetBackdrop({
+        TokenTracker.mainFrame:SetBackdrop({
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
             edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
             tile = true, tileSize = 32,
             edgeSize = 32,
             insets = { left = 11, right = 12, top = 12, bottom = 11 }
         })
-        mainFrame:SetBackdropColor(0, 0, 0, 0.8)
-        mainFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
+        TokenTracker.mainFrame:SetBackdropColor(0, 0, 0, 0.8)
+        TokenTracker.mainFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
 
-        startButton:SetScript("OnClick", TokenTracker.StartFarming)
-        stopButton:SetScript("OnClick", TokenTracker.StopFarming)
+        TokenTracker.startButton:SetScript("OnClick", TokenTracker.StartFarming)
+        TokenTracker.stopButton:SetScript("OnClick", TokenTracker.StopFarming)
 
-        mainFrame:SetScript("OnHide", function() TokenTrackerData.frameVisible = false end)
-        mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
-        if TokenTrackerData.frameVisible then mainFrame:Show() else mainFrame:Hide() end
-
-        TokenTracker.LoadMinimapButtonPosition()
-        PrintMessage("DEBUG: TokenTracker.LoadMinimapButtonPosition() called.")
-
-        -- Minimap button drag and click handlers with edge snapping
-        minimapButton:RegisterForDrag("LeftButton")
-        minimapButton:SetScript("OnDragStart", function(self)
-            self:StartMoving()
-        end)
-        minimapButton:SetScript("OnDragStop", function(self)
-            self:StopMovingOrSizing()
-
-            local mx, my = Minimap:GetCenter()
-            local px, py = self:GetCenter()
-            local radius = Minimap:GetWidth() / 2
-            local x, y = px - mx, py - my
-            local distance = math.sqrt(x * x + y * y)
-
-            if distance > radius then
-                local scale = radius / distance
-                x = x * scale
-                y = y * scale
-            end
-
-            self:ClearAllPoints()
-            self:SetPoint("CENTER", Minimap, "CENTER", x, y)
-
-            TokenTracker.SaveMinimapButtonPosition()
-        end)
-        minimapButton:SetScript("OnClick", function(self, button)
-            if button == "LeftButton" then
-                TokenTracker.ToggleMainFrame()
-            elseif button == "RightButton" then
-                TokenTracker.ShowOptions()
-            end
-        end)
+        TokenTracker.mainFrame:SetScript("OnHide", function() TokenTrackerData.frameVisible = false end)
+        TokenTracker.mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
+        if TokenTrackerData.frameVisible then TokenTracker.mainFrame:Show() else TokenTracker.mainFrame:Hide() end
 
         TokenTrackerData.lastKnownGold = GetMoney()
         PrintMessage("Addon ready. Current character gold: " .. FormatGold(GetMoney(), true))
@@ -323,15 +360,15 @@ local function HandleSlashCommand(msg, editbox)
             if remainingGold < 0 then remainingGold = 0 end
             PrintMessage("Progress to target (" .. FormatGold(TokenTrackerData.targetPrice, true) .. "):")
             PrintMessage("Earned: " .. FormatGold(TokenTrackerData.totalEarnedSinceStart, true) ..
-                                         " | Remaining: " .. FormatGold(remainingGold, true))
+                                     " | Remaining: " .. FormatGold(remainingGold, true))
         else
             PrintMessage("No target set. Use '/tt target <amount>'.")
         end
         TokenTracker.UpdateUI()
     elseif command == "show" then
-        if mainFrame then mainFrame:Show() end
+        if TokenTracker.mainFrame then TokenTracker.mainFrame:Show() end
     elseif command == "hide" then
-        if mainFrame then mainFrame:Hide() end
+        if TokenTracker.mainFrame then TokenTracker.mainFrame:Hide() end
     elseif command == "help" then
         PrintMessage("Available commands:")
         PrintMessage("/tt start - Start a new session.")
@@ -346,7 +383,6 @@ local function HandleSlashCommand(msg, editbox)
     end
 end
 
--- Register the slash command handler
 SlashCmdList["TOKENTRACKER"] = HandleSlashCommand
 
 -- Filter chat messages to prevent slash commands from appearing in chat

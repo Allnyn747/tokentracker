@@ -4,5 +4,5 @@
 ## Author: Allnyn747
 ## Version: 0.1
 ## SavedVariables: TokenTrackerData
-TokenTrackerUI.xml
 TokenTracker.lua
+TokenTrackerUI.xml

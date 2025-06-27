@@ -1,4 +1,7 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ UI_Frame.xsd">
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.blizzard.com/wow/ui/ UI_Frame.xsd">
+
     <Frame name="TokenTrackerFrame" inherits="BackdropTemplate" toplevel="true" movable="true" enableMouse="true" parent="UIParent" frameStrata="MEDIUM">
         <Size x="250" y="180"/>
         <Anchors>
@@ -69,37 +72,32 @@
                     </OnClick>
                 </Scripts>
             </Button>
-
-            <!-- Minimap Button -->
-            <Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true" frameStrata="HIGH" inherits="UIPanelButtonTemplate">
-                <Size x="32" y="32"/>
-                <Anchors>
-                    <Anchor point="TOPLEFT"/>
-                </Anchors>
-<Layers>
-    <Layer level="BACKGROUND">
-        <Texture name="$parentBorder" file="Interface\\Minimap\\MiniMap-TrackingBorder" setAllPoints="true"/>
-    </Layer>
-    <Layer level="ARTWORK">
-        <Texture name="$parentIcon" file="Interface\\Icons\\WoW_Token01" setAllPoints="true"/>
-    </Layer>
-</Layers>
-                <Scripts>
-                    <OnLoad>
-                        self:Show()
-                    </OnLoad>
-                    <OnEnter>
-                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-                        GameTooltip:SetText("Token Tracker", nil, nil, nil, nil, true)
-                        GameTooltip:AddLine("Left-click to toggle main frame", 1, 1, 1)
-                        GameTooltip:AddLine("Right-click for options", 0.6, 0.6, 0.6)
-                        GameTooltip:Show()
-                    </OnEnter>
-                    <OnLeave>
-                        GameTooltip:Hide()
-                    </OnLeave>
-                </Scripts>
-            </Button>
         </Frames>
     </Frame>
+
+    <Button name="TokenTrackerMinimapButton"
+            parent="UIParent"
+            toplevel="true"
+            movable="true"
+            enableMouse="true"
+            frameStrata="HIGH"
+            alpha="1">
+        <Size x="32" y="32"/>
+        <Anchors>
+            <Anchor point="CENTER" x="0" y="0"/>
+        </Anchors>
+
+        <NormalTexture file="Interface\\Icons\\WoW_Token01"/>
+        <PushedTexture file="Interface\\Icons\\WoW_Token01"/>
+        <HighlightTexture file="Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
+
+        <Scripts>
+            <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
+            <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>
+            <OnLeave>TokenTracker_MinimapButton_OnLeave(self)</OnLeave>
+            <OnDragStop>TokenTracker_MinimapButton_OnDragStop(self)</OnDragStop>
+            <OnClick>TokenTracker_MinimapButton_OnClick(self, button)</OnClick>
+        </Scripts>
+    </Button>
+
 </Ui>

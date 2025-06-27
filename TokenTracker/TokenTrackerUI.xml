@@ -75,33 +75,28 @@
         </Frames>
     </Frame>
 
-    <Button name="TokenTrackerMinimapButton"
-            parent="UIParent"
-            toplevel="true"
-            movable="true"
-            enableMouse="true"
-            frameStrata="HIGH"
-            alpha="1">
-        <Size x="32" y="32"/>
-        <Anchors>
-            <Anchor point="CENTER" x="0" y="0"/>
-        </Anchors>
-
-        <NormalTexture file="Interface\\Icons\\WoW_Token01"/>
-        <PushedTexture file="Interface\\Icons\\WoW_Token01"/>
-        <HighlightTexture file="Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
-
-        <Scripts>
-            <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
-            <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>
-            <OnLeave>TokenTracker_MinimapButton_OnLeave(self)</OnLeave>
-            <OnClick>TokenTracker_MinimapButton_OnClick(self, button)</OnClick>
-            <OnDragStart> self:StartMoving() </OnDragStart>
-            <OnDragStop>
-                self:StopMovingOrSizing()
-                TokenTracker_MinimapButton_OnDragStop(self)
-            </OnDragStop>
-        </Scripts>
-    </Button>
+<Button name="TokenTrackerMinimapButton"
+        parent="UIParent"
+        toplevel="true"
+        movable="true"
+        enableMouse="true"
+        frameStrata="HIGH"
+        alpha="1">
+    <Size x="32" y="32"/>
+    <Anchors>
+        <Anchor point="CENTER" x="0" y="0"/>
+    </Anchors>
+    <NormalTexture file="Interface\\Icons\\WoW_Token01"/>
+    <PushedTexture file="Interface\\Icons\\WoW_Token01"/>
+    <HighlightTexture file="Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
+    <Scripts>
+        <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
+        <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>
+        <OnLeave>TokenTracker_MinimapButton_OnLeave(self)</OnLeave>
+        <OnClick>TokenTracker_MinimapButton_OnClick(self, button)</OnClick>
+        <OnDragStart>TokenTracker_MinimapButton_OnDragStart(self)</OnDragStart>
+        <OnDragStop>TokenTracker_MinimapButton_OnDragStop(self)</OnDragStop>
+    </Scripts>
+</Button>
 
 </Ui>

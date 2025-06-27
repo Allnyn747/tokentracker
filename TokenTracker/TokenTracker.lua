@@ -213,7 +213,7 @@ local TokenTrackerHelpFrame -- This will hold your help frame reference
 -- Function to create the help display frame (called once, when first needed)
 local function CreateTokenTrackerHelpFrame()
     TokenTrackerHelpFrame = CreateFrame("Frame", "TokenTrackerHelpFrame", UIParent, "BasicFrameTemplate");
-    TokenTrackerHelpFrame:SetSize(400, 250); -- Adjust size as needed
+    TokenTrackerHelpFrame:SetSize(400, 250); -- Adjust size as needed for ALL text
     TokenTrackerHelpFrame:SetPoint("CENTER");
     TokenTrackerHelpFrame:SetMovable(true);
     TokenTrackerHelpFrame:EnableMouse(true);
@@ -226,32 +226,14 @@ local function CreateTokenTrackerHelpFrame()
     TokenTrackerHelpFrame.TitleText:SetPoint("TOP", 0, -6);
     TokenTrackerHelpFrame.TitleText:SetText("TokenTracker Commands");
 
-    -- ScrollFrame to hold the text
-    local scrollFrame = CreateFrame("ScrollFrame", "$parentScrollFrame", TokenTrackerHelpFrame, "UIPanelScrollFrameTemplate");
-    scrollFrame:SetPoint("TOPLEFT", 10, -25);
-    scrollFrame:SetPoint("BOTTOMRIGHT", -29, 10);
-    scrollFrame:SetClipsChildren(true);
-
-    -- NEW: Create a container frame for the text
-    local textContainer = CreateFrame("Frame", nil, scrollFrame);
-    textContainer:SetSize(10, 10); -- Dummy size, will adjust with font string
-    textContainer:SetPoint("TOPLEFT", 0, 0);
-    textContainer:SetPoint("TOPRIGHT", 0, 0);
-
-    -- FontString to display the actual text
-    local text = textContainer:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
-    text:SetPoint("TOPLEFT", 5, -5);
-    text:SetPoint("BOTTOMRIGHT", -5, 5);
+    -- FontString to display the actual text - placed directly on the main frame
+    local text = TokenTrackerHelpFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
+    text:SetPoint("TOPLEFT", 15, -30); -- Adjust these points to give padding inside the frame
+    text:SetPoint("BOTTOMRIGHT", -15, 40); -- Adjust these points to give padding and make space for the close button
     text:SetJustifyH("LEFT");
     text:SetJustifyV("TOP");
     text:SetNonSpaceWrap(true);
-    text:SetMaxLines(0); -- Allow unlimited lines
-    -- IMPORTANT: FontString needs to manage its own height based on content for scrolling
-    text:SetHeight(0); -- Start with 0 height, it will expand with text
-    textContainer:SetHeight(0); -- Container will match text height
-
-    -- Set the container frame as the scroll child
-    scrollFrame:SetScrollChild(textContainer);
+    text:SetMaxLines(0); -- Allow unlimited lines (will simply expand vertically or clip if frame is too small)
 
     TokenTrackerHelpFrame.text = text; -- Keep reference to the font string for setting text
 
@@ -284,6 +266,11 @@ function TokenTracker.ShowOptions()
     helpText = helpText .. "|cffffffff[TokenTracker]|r /tt help - Show this list."
 
     TokenTrackerHelpFrame.text:SetText(helpText);
+    
+    -- No need for height/width adjustments related to scrolling
+    -- The FontString will automatically size its height based on its fixed width points
+    -- and MaxLines(0), then the parent frame will clip if it's too small.
+
     TokenTrackerHelpFrame:Show();
 end
 -- --- END OF NEW/MODIFIED CODE ---

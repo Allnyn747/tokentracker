@@ -141,17 +141,17 @@
             </Anchor>
         </Anchors>
         <Layers>
-            <Layer level="BACKGROUND">
+            <Layer level="ARTWORK">
                 <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
                     <Size>
-                        <AbsDimension x="36" y="36" />
+                        <AbsDimension x="50" y="50" />
                     </Size>
                     <Anchors>
                         <Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER" x="7" y="-10" />
                     </Anchors>
                 </Texture>
             </Layer>
-            <Layer level="ARTWORK">
+            <Layer level="BACKGROUND">
                 <Texture name="$parentIcon" file="Interface\Icons\WoW_Token01">
                     <Size>
                         <AbsDimension x="20" y="20" />

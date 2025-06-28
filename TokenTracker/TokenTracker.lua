@@ -15,7 +15,7 @@ if TokenTrackerData.isTrackingActive == nil then TokenTrackerData.isTrackingActi
 if TokenTrackerData.lastKnownGold == nil then TokenTrackerData.lastKnownGold = 0 end
 if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
 if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
-if TokenTrackerData.MinimapButtonPosition == nil then TokenTrackerData.MinimapButtonPosition = nil end
+
 
 -- UI Element References (Now storing them directly in TokenTracker table for global access)
 -- Removed local declarations as they are now properties of the global TokenTracker table
@@ -109,26 +109,19 @@ end
 -- This function is called by the TokenTrackerMinimapButton's OnLoad handler in the XML.
 -- It's crucial for initializing the button's behavior and setting its global reference.
 function TokenTracker_MinimapButton_OnLoad(self)
-    -- Assign the button reference to the TokenTracker table for global access
+    PrintMessage("DEBUG: Minimap button OnLoad fired")
     TokenTracker.MinimapButtonFrame = self
+    PrintMessage("DEBUG: MinimapButtonFrame assigned")
     self:EnableMouse(true)
     self:SetMovable(true)
     self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     self:RegisterForDrag("LeftButton")
     self:SetClampedToScreen(true)
-    self:Show() -- ensures the button is visible
-    self:SetAlpha(1) -- Added to ensure full opacity
-
-    -- Set the icon texture here, as the button is now loaded
-    local iconTexture = _G["TokenTrackerMinimapButtonIcon"] or self:GetNormalTexture()
-    if iconTexture then
-        iconTexture:SetTexture("Interface\\Icons\\WoW_Token01")
-        iconTexture:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-    else
-        PrintMessage("DEBUG: Minimap button icon NOT found for setting texture.")
-    end
-
-    TokenTracker.LoadMinimapButtonPosition() -- Load saved position
+    self:Show()
+    self:SetAlpha(1)
+    
+    self:SetUserPlaced(false)  -- Add this
+    PrintMessage("DEBUG: Minimap button OnLoad complete")
 end
 
 -- This function is called by the TokenTrackerMinimapButton's OnClick handler in the XML.
@@ -145,7 +138,6 @@ function TokenTracker_MinimapButton_OnDragStart(self)
     self:SetScript("OnUpdate", TokenTracker_MinimapButton_OnUpdate)
 end
 
--- NEW: This function handles smooth circular dragging around the minimap
 function TokenTracker_MinimapButton_OnUpdate(self)
     local mx, my = GetCursorPosition()
     local scale = self:GetEffectiveScale()
@@ -171,11 +163,9 @@ end
 
 -- UPDATED: This function is called by the TokenTrackerMinimapButton's OnDragStop handler in the XML.
 function TokenTracker_MinimapButton_OnDragStop(self)
-    -- Stop the OnUpdate script
     self:SetScript("OnUpdate", nil)
-    
-    -- Save the final position
-    TokenTracker.SaveMinimapButtonPosition()
+    self:SetUserPlaced(false)  -- Add this
+    PrintMessage("DEBUG: DragStop - Position should reset on reload")
 end
 
 -- This function is called by the TokenTrackerMinimapButton's OnEnter handler in the XML.
@@ -191,6 +181,7 @@ end
 function TokenTracker_MinimapButton_OnLeave(self)
     GameTooltip:Hide()
 end
+
 
 -- Other TokenTracker Functions
 
@@ -225,45 +216,6 @@ function TokenTracker.ShowOptions()
 
     TokenTrackerHelpFrame.text:SetText(helpText);
     TokenTrackerHelpFrame:Show();
-end
--- --- END OF NEW/MODIFIED CODE ---
-
-
--- UPDATED: Save minimap button position with circular positioning
-function TokenTracker.SaveMinimapButtonPosition()
-    if TokenTracker.MinimapButtonFrame then
-        local point, relativeTo, relativePoint, x, y = TokenTracker.MinimapButtonFrame:GetPoint()
-        local relativeToName = nil
-
-        if relativeTo and relativeTo.GetName then
-            relativeToName = relativeTo:GetName()
-        end
-
-        TokenTrackerData.MinimapButtonPosition = {
-            point = point or "CENTER",
-            relativeTo = relativeToName or "Minimap", 
-            relativePoint = relativePoint or "CENTER",
-            x = x or 80, 
-            y = y or 0
-        }
-    end
-end
-
--- UPDATED: Load minimap button position with circular positioning
-function TokenTracker.LoadMinimapButtonPosition()
-    if TokenTracker.MinimapButtonFrame then
-        if TokenTrackerData.MinimapButtonPosition then
-            local pos = TokenTrackerData.MinimapButtonPosition
-            TokenTracker.MinimapButtonFrame:ClearAllPoints()
-            -- Ensure we're positioning relative to Minimap
-            local relativeTo = _G[pos.relativeTo] or Minimap
-            TokenTracker.MinimapButtonFrame:SetPoint(pos.point, relativeTo, pos.relativePoint, pos.x, pos.y)
-            PrintMessage("DEBUG: Minimap button position loaded: " .. pos.x .. ", " .. pos.y)
-        else
-            -- Default position on minimap edge
-            TokenTracker.MinimapButtonFrame:SetPoint("CENTER", Minimap, "CENTER", 80, 0)
-        end
-    end
 end
 
 -- Event Handling & Slash Commands

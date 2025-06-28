@@ -117,20 +117,53 @@
         </Frames>
     </Frame>
 
-    <Button name="TokenTrackerMinimapButton"
-        parent="UIParent"
-        toplevel="true"
-        movable="true"
-        enableMouse="true"
-        frameStrata="HIGH"
-        alpha="1">
-    <Size x="32" y="32"/>
+<Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="false">
+    <Size>
+        <AbsDimension x="32" y="32"/>
+    </Size>
     <Anchors>
-        <Anchor point="CENTER" x="0" y="0"/>
+        <Anchor point="CENTER" relativeTo="Minimap">
+            <Offset>
+                <AbsDimension x="-70" y="-70"/>
+            </Offset>
+        </Anchor>
     </Anchors>
-    <NormalTexture file="Interface\\Icons\\WoW_Token01"/>
-    <PushedTexture file="Interface\\Icons\\WoW_Token01"/>
-    <HighlightTexture file="Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
+    <Layers>
+        <!-- Added debug texture -->
+        <Layer level="BACKGROUND">
+            <Texture>
+                <Color r="1" g="0" b="0" a="1"/>
+                <Size>
+                    <AbsDimension x="32" y="32"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="CENTER"/>
+                </Anchors>
+            </Texture>
+        </Layer>
+        <Layer level="BACKGROUND">
+            <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+                <Size>
+                    <AbsDimension x="54" y="54"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="CENTER"/>
+                </Anchors>
+            </Texture>
+        </Layer>
+        <Layer level="ARTWORK">
+            <Texture name="$parentIcon" file="Interface\Icons\WoW_Token01">
+                <Size>
+                    <AbsDimension x="20" y="20"/>
+                </Size>
+                <Anchors>
+                    <Anchor point="CENTER"/>
+                </Anchors>
+                <TexCoords left="0.07" right="0.93" top="0.07" bottom="0.93"/>
+            </Texture>
+        </Layer>
+    </Layers>
+    <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
     <Scripts>
         <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
         <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>

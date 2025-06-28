@@ -2,10 +2,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.blizzard.com/wow/ui/ UI_Frame.xsd">
 
-    <Frame name="TokenTrackerFrame" inherits="BackdropTemplate" toplevel="true" movable="true" enableMouse="true" parent="UIParent" frameStrata="MEDIUM">
-        <Size x="250" y="180"/>
+    <Frame name="TokenTrackerFrame" inherits="BackdropTemplate" toplevel="true" movable="true"
+        enableMouse="true" parent="UIParent" frameStrata="MEDIUM">
+        <Size x="250" y="180" />
         <Anchors>
-            <Anchor point="CENTER"/>
+            <Anchor point="CENTER" />
         </Anchors>
         <Scripts>
             <OnMouseDown> self:StartMoving() </OnMouseDown>
@@ -13,58 +14,65 @@
         </Scripts>
         <Layers>
             <Layer level="ARTWORK">
-                <FontString name="TokenTrackerTitle" inherits="GameFontNormalLarge" text="TOKEN TRACKER">
+                <FontString name="TokenTrackerTitle" inherits="GameFontNormalLarge"
+                    text="TOKEN TRACKER">
                     <Anchors>
-                        <Anchor point="TOP" x="0" y="-10"/>
+                        <Anchor point="TOP" x="0" y="-10" />
                     </Anchors>
-                    <Color r="1" g="0.82" b="0"/>
+                    <Color r="1" g="0.82" b="0" />
                 </FontString>
 
-                <FontString name="TokenTrackerStatusText" inherits="GameFontHighlightSmall" text="Status: Loading...">
+                <FontString name="TokenTrackerStatusText" inherits="GameFontHighlightSmall"
+                    text="Status: Loading...">
                     <Anchors>
-                        <Anchor point="TOPLEFT" x="20" y="-40"/>
+                        <Anchor point="TOPLEFT" x="20" y="-40" />
                     </Anchors>
-                    <Color r="1" g="1" b="1"/>
+                    <Color r="1" g="1" b="1" />
                 </FontString>
 
-                <FontString name="TokenTrackerGoldEarnedText" inherits="GameFontHighlightSmall" text="Earned: 0g 0s 0c">
+                <FontString name="TokenTrackerGoldEarnedText" inherits="GameFontHighlightSmall"
+                    text="Earned: 0g 0s 0c">
                     <Anchors>
-                        <Anchor point="TOPLEFT" x="20" y="-60"/>
-                    </Anchors>
-                </FontString>
-
-                <FontString name="TokenTrackerTargetText" inherits="GameFontHighlightSmall" text="Target: Not set">
-                    <Anchors>
-                        <Anchor point="TOPLEFT" x="20" y="-80"/>
+                        <Anchor point="TOPLEFT" x="20" y="-60" />
                     </Anchors>
                 </FontString>
 
-                <FontString name="TokenTrackerProgressText" inherits="GameFontHighlightSmall" text="Progress: N/A">
+                <FontString name="TokenTrackerTargetText" inherits="GameFontHighlightSmall"
+                    text="Target: Not set">
                     <Anchors>
-                        <Anchor point="TOPLEFT" x="20" y="-100"/>
+                        <Anchor point="TOPLEFT" x="20" y="-80" />
+                    </Anchors>
+                </FontString>
+
+                <FontString name="TokenTrackerProgressText" inherits="GameFontHighlightSmall"
+                    text="Progress: N/A">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="20" y="-100" />
                     </Anchors>
                 </FontString>
             </Layer>
         </Layers>
         <Frames>
-            <Button name="TokenTrackerStartButton" inherits="UIPanelButtonTemplate" text="Start Farming">
-                <Size x="100" y="25"/>
+            <Button name="TokenTrackerStartButton" inherits="UIPanelButtonTemplate"
+                text="Start Farming">
+                <Size x="100" y="25" />
                 <Anchors>
-                    <Anchor point="BOTTOMLEFT" x="20" y="20"/>
+                    <Anchor point="BOTTOMLEFT" x="20" y="20" />
                 </Anchors>
             </Button>
 
-            <Button name="TokenTrackerStopButton" inherits="UIPanelButtonTemplate" text="Stop Farming">
-                <Size x="100" y="25"/>
+            <Button name="TokenTrackerStopButton" inherits="UIPanelButtonTemplate"
+                text="Stop Farming">
+                <Size x="100" y="25" />
                 <Anchors>
-                    <Anchor point="BOTTOMRIGHT" x="-20" y="20"/>
+                    <Anchor point="BOTTOMRIGHT" x="-20" y="20" />
                 </Anchors>
             </Button>
 
             <Button name="TokenTrackerCloseButton" inherits="UIPanelCloseButton">
-                <Size x="24" y="24"/>
+                <Size x="24" y="24" />
                 <Anchors>
-                    <Anchor point="TOPRIGHT" x="-8" y="-8"/>
+                    <Anchor point="TOPRIGHT" x="-8" y="-8" />
                 </Anchors>
                 <Scripts>
                     <OnClick>
@@ -75,38 +83,41 @@
         </Frames>
     </Frame>
 
-<Frame name="TokenTrackerHelpFrame" inherits="BackdropTemplate" parent="UIParent" toplevel="true" movable="true" enableMouse="true" frameStrata="DIALOG" hidden="true">
-        <Size x="400" y="250"/>
+    <Frame name="TokenTrackerHelpFrame" inherits="BackdropTemplate" parent="UIParent"
+        toplevel="true" movable="true" enableMouse="true" frameStrata="DIALOG" hidden="true">
+        <Size x="400" y="250" />
         <Anchors>
-            <Anchor point="CENTER"/>
+            <Anchor point="CENTER" />
         </Anchors>
-        
+
         <Scripts>
             <OnDragStart> self:StartMoving(); </OnDragStart>
             <OnDragStop> self:StopMovingOrSizing(); </OnDragStop>
         </Scripts>
         <Layers>
             <Layer level="OVERLAY">
-                <FontString name="$parentTitleText" inherits="GameFontNormal" text="TokenTracker Commands">
+                <FontString name="$parentTitleText" inherits="GameFontNormal"
+                    text="TokenTracker Commands">
                     <Anchors>
-                        <Anchor point="TOP" x="0" y="-6"/>
+                        <Anchor point="TOP" x="0" y="-6" />
                     </Anchors>
                 </FontString>
             </Layer>
             <Layer level="ARTWORK">
-                <FontString name="$parentMainContentText" inherits="GameFontHighlightSmall" nonspacewrap="true" maxLines="0" justifyH="LEFT" justifyV="TOP">
-                                        <Anchors>
-                        <Anchor point="TOPLEFT" x="15" y="-30"/>
-                        <Anchor point="BOTTOMRIGHT" x="-15" y="40"/>
+                <FontString name="$parentMainContentText" inherits="GameFontHighlightSmall"
+                    nonspacewrap="true" maxLines="0" justifyH="LEFT" justifyV="TOP">
+                    <Anchors>
+                        <Anchor point="TOPLEFT" x="15" y="-30" />
+                        <Anchor point="BOTTOMRIGHT" x="-15" y="40" />
                     </Anchors>
                 </FontString>
             </Layer>
         </Layers>
         <Frames>
             <Button name="$parentCloseButton" inherits="UIPanelButtonTemplate" text="Close">
-                <Size x="70" y="22"/>
+                <Size x="70" y="22" />
                 <Anchors>
-                    <Anchor point="BOTTOM" x="0" y="8"/>
+                    <Anchor point="BOTTOM" x="0" y="8" />
                 </Anchors>
                 <Scripts>
                     <OnClick>
@@ -117,61 +128,50 @@
         </Frames>
     </Frame>
 
-<Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="false">
-    <Size>
-        <AbsDimension x="32" y="32"/>
-    </Size>
-    <Anchors>
-        <Anchor point="CENTER" relativeTo="Minimap">
-            <Offset>
-                <AbsDimension x="-70" y="-70"/>
-            </Offset>
-        </Anchor>
-    </Anchors>
-    <Layers>
-        <!-- Added debug texture -->
-        <Layer level="BACKGROUND">
-            <Texture>
-                <Color r="1" g="0" b="0" a="1"/>
-                <Size>
-                    <AbsDimension x="32" y="32"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="CENTER"/>
-                </Anchors>
-            </Texture>
-        </Layer>
-        <Layer level="BACKGROUND">
-            <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
-                <Size>
-                    <AbsDimension x="54" y="54"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="CENTER"/>
-                </Anchors>
-            </Texture>
-        </Layer>
-        <Layer level="ARTWORK">
-            <Texture name="$parentIcon" file="Interface\Icons\WoW_Token01">
-                <Size>
-                    <AbsDimension x="20" y="20"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="CENTER"/>
-                </Anchors>
-                <TexCoords left="0.07" right="0.93" top="0.07" bottom="0.93"/>
-            </Texture>
-        </Layer>
-    </Layers>
-    <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
-    <Scripts>
-        <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
-        <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>
-        <OnLeave>TokenTracker_MinimapButton_OnLeave(self)</OnLeave>
-        <OnClick>TokenTracker_MinimapButton_OnClick(self, button)</OnClick>
-        <OnDragStart>TokenTracker_MinimapButton_OnDragStart(self)</OnDragStart>
-        <OnDragStop>TokenTracker_MinimapButton_OnDragStop(self)</OnDragStop>
-    </Scripts>
-</Button>
+    <Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true"
+        hidden="false">
+        <Size>
+            <AbsDimension x="32" y="32" />
+        </Size>
+        <Anchors>
+            <Anchor point="CENTER" relativeTo="Minimap">
+                <Offset>
+                    <AbsDimension x="-70" y="-70" />
+                </Offset>
+            </Anchor>
+        </Anchors>
+        <Layers>
+            <Layer level="BACKGROUND">
+                <Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+                    <Size>
+                        <AbsDimension x="36" y="36" />
+                    </Size>
+                    <Anchors>
+                        <Anchor point="CENTER" relativeTo="$parent" relativePoint="CENTER" x="7" y="-10" />
+                    </Anchors>
+                </Texture>
+            </Layer>
+            <Layer level="ARTWORK">
+                <Texture name="$parentIcon" file="Interface\Icons\WoW_Token01">
+                    <Size>
+                        <AbsDimension x="20" y="20" />
+                    </Size>
+                    <Anchors>
+                        <Anchor point="CENTER" />
+                    </Anchors>
+                    <TexCoords left="0.07" right="0.93" top="0.07" bottom="0.93" />
+                </Texture>
+            </Layer>
+        </Layers>
+        <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight" />
+        <Scripts>
+            <OnLoad>TokenTracker_MinimapButton_OnLoad(self)</OnLoad>
+            <OnEnter>TokenTracker_MinimapButton_OnEnter(self)</OnEnter>
+            <OnLeave>TokenTracker_MinimapButton_OnLeave(self)</OnLeave>
+            <OnClick>TokenTracker_MinimapButton_OnClick(self, button)</OnClick>
+            <OnDragStart>TokenTracker_MinimapButton_OnDragStart(self)</OnDragStart>
+            <OnDragStop>TokenTracker_MinimapButton_OnDragStop(self)</OnDragStop>
+        </Scripts>
+    </Button>
 
 </Ui>

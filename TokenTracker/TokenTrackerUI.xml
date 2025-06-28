@@ -128,8 +128,7 @@
         </Frames>
     </Frame>
 
-    <Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true"
-        hidden="false">
+    <Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="false" frameStrata="MEDIUM">
         <Size>
             <AbsDimension x="32" y="32" />
         </Size>

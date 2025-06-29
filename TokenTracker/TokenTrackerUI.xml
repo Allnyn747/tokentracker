@@ -128,7 +128,7 @@
         </Frames>
     </Frame>
 
-    <Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="false" frameStrata="MEDIUM">
+    <!-- <Button name="TokenTrackerMinimapButton" parent="Minimap" enableMouse="true" movable="true" hidden="false" frameStrata="MEDIUM">
         <Size>
             <AbsDimension x="32" y="32" />
         </Size>
@@ -171,6 +171,6 @@
             <OnDragStart>TokenTracker_MinimapButton_OnDragStart(self)</OnDragStart>
             <OnDragStop>TokenTracker_MinimapButton_OnDragStop(self)</OnDragStop>
         </Scripts>
-    </Button>
+    </Button> -->
 
 </Ui>

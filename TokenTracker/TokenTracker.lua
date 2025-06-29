@@ -16,11 +16,6 @@ if TokenTrackerData.lastKnownGold == nil then TokenTrackerData.lastKnownGold = 0
 if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
 if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
 
-
--- UI Element References (Now storing them directly in TokenTracker table for global access)
--- Removed local declarations as they are now properties of the global TokenTracker table
--- mainFrame, statusText, goldEarnedText, targetText, progressText, startButton, stopButton, minimapButton
-
 -- Chat message function
 local function PrintMessage(message)
     print("|cff00ff99[TokenTracker]|r " .. message)
@@ -106,81 +101,80 @@ end
 
 -- Minimap Button Global Functions
 
--- This function is called by the TokenTrackerMinimapButton's OnLoad handler in the XML.
--- It's crucial for initializing the button's behavior and setting its global reference.
-function TokenTracker_MinimapButton_OnLoad(self)
-    PrintMessage("DEBUG: Minimap button OnLoad fired")
-    TokenTracker.MinimapButtonFrame = self
-    PrintMessage("DEBUG: MinimapButtonFrame assigned")
-    self:EnableMouse(true)
-    self:SetMovable(true)
-    self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    self:RegisterForDrag("LeftButton")
-    self:SetClampedToScreen(true)
-    self:Show()
-    self:SetAlpha(1)
-    
-    self:SetUserPlaced(false)  -- Add this
-    PrintMessage("DEBUG: Minimap button OnLoad complete")
-end
+-- -- This function is called by the TokenTrackerMinimapButton's OnLoad handler in the XML.
+-- -- It's crucial for initializing the button's behavior and setting its global reference.
+-- function TokenTracker_MinimapButton_OnLoad(self)
+--     PrintMessage("DEBUG: Minimap button OnLoad fired")
+--     TokenTracker.MinimapButtonFrame = self
+--     PrintMessage("DEBUG: MinimapButtonFrame assigned")
+--     self:EnableMouse(true)
+--     self:SetMovable(true)
+--     self:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+--     self:RegisterForDrag("LeftButton")
+--     self:SetClampedToScreen(true)
+--     self:Show()
+--     self:SetAlpha(1)
+--     self:SetUserPlaced(false)  -- Add this
+--     PrintMessage("DEBUG: Minimap button OnLoad complete")
+-- end
 
--- This function is called by the TokenTrackerMinimapButton's OnClick handler in the XML.
-function TokenTracker_MinimapButton_OnClick(self, button)
-    if button == "LeftButton" then
-        TokenTracker.ToggleMainFrame()
-    elseif button == "RightButton" then
-        TokenTracker.ShowOptions() -- This will now call the new function to show help
-    end
-end
+-- -- This function is called by the TokenTrackerMinimapButton's OnClick handler in the XML.
+-- function TokenTracker_MinimapButton_OnClick(self, button)
+--     if button == "LeftButton" then
+--         TokenTracker.ToggleMainFrame()
+--     elseif button == "RightButton" then
+--         TokenTracker.ShowOptions() -- This will now call the new function to show help
+--     end
+-- end
 
--- NEW: This function is called by the TokenTrackerMinimapButton's OnDragStart handler in the XML.
-function TokenTracker_MinimapButton_OnDragStart(self)
-    self:SetScript("OnUpdate", TokenTracker_MinimapButton_OnUpdate)
-end
+-- -- NEW: This function is called by the TokenTrackerMinimapButton's OnDragStart handler in the XML.
+-- function TokenTracker_MinimapButton_OnDragStart(self)
+--     self:SetScript("OnUpdate", TokenTracker_MinimapButton_OnUpdate)
+-- end
 
-function TokenTracker_MinimapButton_OnUpdate(self)
-    local mx, my = GetCursorPosition()
-    local scale = self:GetEffectiveScale()
-    mx, my = mx / scale, my / scale
+-- function TokenTracker_MinimapButton_OnUpdate(self)
+--     local mx, my = GetCursorPosition()
+--     local scale = self:GetEffectiveScale()
+--     mx, my = mx / scale, my / scale
     
-    -- Get minimap center
-    local mmx, mmy = Minimap:GetCenter()
+--     -- Get minimap center
+--     local mmx, mmy = Minimap:GetCenter()
     
-    -- Calculate angle from minimap center to mouse
-    local angle = math.atan2(my - mmy, mx - mmx)
+--     -- Calculate angle from minimap center to mouse
+--     local angle = math.atan2(my - mmy, mx - mmx)
     
-    -- Set radius (distance from minimap center)
-    local radius = 80 -- Adjust this value if needed
+--     -- Set radius (distance from minimap center)
+--     local radius = 80 -- Adjust this value if needed
     
-    -- Calculate new position
-    local x = math.cos(angle) * radius
-    local y = math.sin(angle) * radius
+--     -- Calculate new position
+--     local x = math.cos(angle) * radius
+--     local y = math.sin(angle) * radius
     
-    -- Update button position
-    self:ClearAllPoints()
-    self:SetPoint("CENTER", Minimap, "CENTER", x, y)
-end
+--     -- Update button position
+--     self:ClearAllPoints()
+--     self:SetPoint("CENTER", Minimap, "CENTER", x, y)
+-- end
 
--- UPDATED: This function is called by the TokenTrackerMinimapButton's OnDragStop handler in the XML.
-function TokenTracker_MinimapButton_OnDragStop(self)
-    self:SetScript("OnUpdate", nil)
-    self:SetUserPlaced(false)  -- Add this
-    PrintMessage("DEBUG: DragStop - Position should reset on reload")
-end
+-- -- UPDATED: This function is called by the TokenTrackerMinimapButton's OnDragStop handler in the XML.
+-- function TokenTracker_MinimapButton_OnDragStop(self)
+--     self:SetScript("OnUpdate", nil)
+--     self:SetUserPlaced(false)  -- Add this
+--     PrintMessage("DEBUG: DragStop - Position should reset on reload")
+-- end
 
--- This function is called by the TokenTrackerMinimapButton's OnEnter handler in the XML.
-function TokenTracker_MinimapButton_OnEnter(self)
-    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-    GameTooltip:SetText("Token Tracker", nil, nil, nil, nil, true)
-    GameTooltip:AddLine("Left-click to toggle main frame", 1, 1, 1)
-    GameTooltip:AddLine("Right-click for options", 0.6, 0.6, 0.6)
-    GameTooltip:Show()
-end
+-- -- This function is called by the TokenTrackerMinimapButton's OnEnter handler in the XML.
+-- function TokenTracker_MinimapButton_OnEnter(self)
+--     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+--     GameTooltip:SetText("Token Tracker", nil, nil, nil, nil, true)
+--     GameTooltip:AddLine("Left-click to toggle main frame", 1, 1, 1)
+--     GameTooltip:AddLine("Right-click for options", 0.6, 0.6, 0.6)
+--     GameTooltip:Show()
+-- end
 
--- This function is called by the TokenTrackerMinimapButton's OnLeave handler in the XML.
-function TokenTracker_MinimapButton_OnLeave(self)
-    GameTooltip:Hide()
-end
+-- -- This function is called by the TokenTrackerMinimapButton's OnLeave handler in the XML.
+-- function TokenTracker_MinimapButton_OnLeave(self)
+--     GameTooltip:Hide()
+-- end
 
 
 -- Other TokenTracker Functions
@@ -234,18 +228,6 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         TokenTracker.startButton = TokenTrackerStartButton
         TokenTracker.stopButton = TokenTrackerStopButton
         TokenTrackerHelpFrame.text = _G["TokenTrackerHelpFrameMainContentText"]
-        -- TokenTracker.MinimapButtonFrame is assigned in its OnLoad, but we can double check here for safety
-        if not TokenTracker.MinimapButtonFrame then
-            TokenTracker.MinimapButtonFrame = TokenTrackerMinimapButton
-            PrintMessage("DEBUG: Minimap button assigned at PLAYER_LOGIN (fallback).")
-        end
-
-        if TokenTracker.mainFrame and TokenTracker.goldEarnedText and TokenTracker.MinimapButtonFrame then
-            -- No action needed here, just condition check
-        else
-            PrintMessage("DEBUG: ERROR - Some TokenTracker UI elements NOT found at PLAYER_LOGIN.")
-        end
-
         -- Set backdrop for TokenTracker.mainFrame
         TokenTracker.mainFrame:SetBackdrop({
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",

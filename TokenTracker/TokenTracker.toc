@@ -4,5 +4,10 @@
 ## Author: Allnyn747
 ## Version: 0.1
 ## SavedVariables: TokenTrackerData
+
+libs\LibStub\LibStub.lua
+libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+libs\LibDBIcon-1.0\LibDBIcon-1.0.lua
+
 TokenTracker.lua
 TokenTrackerUI.xml

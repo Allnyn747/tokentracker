@@ -1,4 +1,4 @@
 # tokentracker
 WoW add-on to track gold earned for a WoW Token
 
-![screenshot](screenshot.png)
+![Screenshot](Screenshot.png)

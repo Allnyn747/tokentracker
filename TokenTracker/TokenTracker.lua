@@ -5,7 +5,7 @@
 -- SavedVariables: TokenTrackerData
 -- Loads: TokenTrackerUI.xml
 
-TokenTracker = TokenTracker or {} -- Changed for robustness: use existing table if it exists
+TokenTracker = TokenTracker or {}
 TokenTrackerData = TokenTrackerData or {}
 
 -- Initialize SavedVariables fields with default values if they are missing.
@@ -15,6 +15,31 @@ if TokenTrackerData.isTrackingActive == nil then TokenTrackerData.isTrackingActi
 if TokenTrackerData.lastKnownGold == nil then TokenTrackerData.lastKnownGold = 0 end
 if TokenTrackerData.targetPrice == nil then TokenTrackerData.targetPrice = 0 end
 if TokenTrackerData.frameVisible == nil then TokenTrackerData.frameVisible = true end
+
+-- Load LibDataBroker and LibDBIcon
+local LDB = LibStub("LibDataBroker-1.1")
+local icon = LibStub("LibDBIcon-1.0")
+
+-- Define the LDB launcher object
+local trackerLauncher = LDB:NewDataObject("TokenTracker", {
+    type = "launcher",
+    icon = "Interface\\Icons\\WoW_Token01",
+    text = "Token Tracker",
+
+    OnClick = function(_, button)
+        if button == "LeftButton" then
+            TokenTracker.ToggleMainFrame()
+        elseif button == "RightButton" then
+            TokenTracker.ShowOptions()
+        end
+    end,
+
+    OnTooltipShow = function(tooltip)
+        tooltip:AddLine("Token Tracker")
+        tooltip:AddLine("Left-Click: Show/Hide Tracker")
+        tooltip:AddLine("Right-Click: Show Command Help")
+    end
+})
 
 -- Chat message function
 local function PrintMessage(message)
@@ -218,6 +243,7 @@ end
 local eventFrame = CreateFrame("Frame")
 eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
     if event == "ADDON_LOADED" and addonName == "TokenTracker" then
+
     elseif event == "PLAYER_LOGIN" then
         -- Assign UI elements to the TokenTracker table for global access
         TokenTracker.mainFrame = TokenTrackerFrame
@@ -228,6 +254,7 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         TokenTracker.startButton = TokenTrackerStartButton
         TokenTracker.stopButton = TokenTrackerStopButton
         TokenTrackerHelpFrame.text = _G["TokenTrackerHelpFrameMainContentText"]
+
         -- Set backdrop for TokenTracker.mainFrame
         TokenTracker.mainFrame:SetBackdrop({
             bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -250,13 +277,17 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
         TokenTrackerHelpFrame:SetBackdropColor(0, 0, 0, 0.8)
         TokenTrackerHelpFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
 
-
         TokenTracker.startButton:SetScript("OnClick", TokenTracker.StartFarming)
         TokenTracker.stopButton:SetScript("OnClick", TokenTracker.StopFarming)
 
         TokenTracker.mainFrame:SetScript("OnHide", function() TokenTrackerData.frameVisible = false end)
         TokenTracker.mainFrame:SetScript("OnShow", function() TokenTrackerData.frameVisible = true end)
-        if TokenTrackerData.frameVisible then TokenTracker.mainFrame:Show() else TokenTracker.mainFrame:Hide() end
+
+        if TokenTrackerData.frameVisible then
+            TokenTracker.mainFrame:Show()
+        else
+            TokenTracker.mainFrame:Hide()
+        end
 
         TokenTrackerData.lastKnownGold = GetMoney()
         PrintMessage("Addon ready. Current character gold: " .. FormatGold(GetMoney(), true))
@@ -271,6 +302,18 @@ eventFrame:SetScript("OnEvent", function(self, event, addonName, ...)
             PrintMessage("Target token price set to: " .. FormatGold(TokenTrackerData.targetPrice, true))
         end
 
+        -- 👇 NEW: Register the LibDBIcon minimap icon
+        TokenTrackerData.minimap = TokenTrackerData.minimap or { hide = false }
+
+        if not icon:IsRegistered("TokenTracker") then
+            icon:Register("TokenTracker", trackerLauncher, TokenTrackerData.minimap)
+        end
+
+        if TokenTrackerData.minimap.hide then
+            icon:Hide("TokenTracker")
+        end
+
+        -- Final UI update
         TokenTracker.UpdateUI()
 
     elseif event == "PLAYER_MONEY" then
@@ -345,6 +388,19 @@ local function HandleSlashCommand(msg, editbox)
         if TokenTracker.mainFrame then TokenTracker.mainFrame:Show() end
     elseif command == "hide" then
         if TokenTracker.mainFrame then TokenTracker.mainFrame:Hide() end
+    elseif command == "icon" then
+        local sub = string.lower(args[2] or "")
+        if sub == "hide" then
+            icon:Hide("TokenTracker")
+            TokenTrackerData.minimap.hide = true
+            PrintMessage("Minimap icon hidden.")
+        elseif sub == "show" then
+            icon:Show("TokenTracker")
+            TokenTrackerData.minimap.hide = false
+            PrintMessage("Minimap icon shown.")
+        else
+            PrintMessage("Usage: /tt icon show  |  /tt icon hide")
+        end
     elseif command == "help" then
         -- This is the slash command help, which you may want to keep
         PrintMessage("Available commands:")
@@ -354,6 +410,7 @@ local function HandleSlashCommand(msg, editbox)
         PrintMessage("/tt target <amount> - Set goal.")
         PrintMessage("/tt progress - Show progress.")
         PrintMessage("/tt show | /tt hide - Toggle UI.")
+        PrintMessage("/tt icon show | hide - Show/hide minimap icon.")
         PrintMessage("/tt help - Show this list.")
     else
         PrintMessage("Unknown command. Try '/tt help'.")

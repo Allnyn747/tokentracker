@@ -151,7 +151,7 @@
                 text="Toggle Minimap Icon">
                 <Size x="160" y="22" />
                 <Anchors>
-                    <Anchor point="TOPLEFT" relativeTo="TokenTrackerHelpFrameGoldTargetEditBox" relativePoint="BOTTOMLEFT" x="0" y="-15" />
+                    <Anchor point="TOPLEFT" relativeTo="$parentGoldTargetLabel" relativePoint="BOTTOMLEFT" x="0" y="-25" />
                     </Anchors>
                 <Scripts>
                     <OnClick>

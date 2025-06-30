@@ -37,7 +37,7 @@ local trackerLauncher = LDB:NewDataObject("TokenTracker", {
     OnTooltipShow = function(tooltip)
         tooltip:AddLine("Token Tracker")
         tooltip:AddLine("Left-Click: Show/Hide Tracker")
-        tooltip:AddLine("Right-Click: Show Command Help")
+        tooltip:AddLine("Right-Click: Show Options")
     end
 })
 

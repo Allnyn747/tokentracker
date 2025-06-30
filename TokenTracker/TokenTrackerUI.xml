@@ -83,7 +83,7 @@
         </Frames>
     </Frame>
 
-    <Frame name="TokenTrackerHelpFrame" inherits="BackdropTemplate" parent="UIParent"
+<Frame name="TokenTrackerHelpFrame" inherits="BackdropTemplate" parent="UIParent"
         toplevel="true" movable="true" enableMouse="true" frameStrata="DIALOG" hidden="true">
         <Size x="400" y="250" />
         <Anchors>
@@ -103,7 +103,7 @@
         <Layers>
             <Layer level="OVERLAY">
                 <FontString name="$parentTitleText" inherits="GameFontNormal"
-                    text="TokenTracker Commands">
+                    text="TokenTracker Options">
                     <Anchors>
                         <Anchor point="TOP" x="0" y="-15" />
                     </Anchors>
@@ -114,17 +114,60 @@
                     nonspacewrap="true" maxLines="0" justifyH="LEFT" justifyV="TOP">
                     <Anchors>
                         <Anchor point="TOPLEFT" x="15" y="-30" />
-                        <Anchor point="BOTTOMRIGHT" x="-15" y="40" />
+                        <Anchor point="BOTTOMRIGHT" x="-15" y="80" />
                     </Anchors>
                 </FontString>
-                <FontString name="$parentGoldTargetLabel" inherits="GameFontHighlightSmall" text="Set Gold Target:">
+                <FontString name="$parentGoldTargetLabel" inherits="GameFontHighlightSmall"
+                    text="Set Gold Target:">
                     <Anchors>
-                        <Anchor point="BOTTOMLEFT" x="25" y="50"/>
+                        <Anchor point="TOPLEFT" x="20" y="-50" />
                     </Anchors>
                 </FontString>
             </Layer>
         </Layers>
         <Frames>
+            <EditBox name="TokenTrackerHelpFrameGoldTargetEditBox" inherits="InputBoxTemplate"
+                numeric="true" autoFocus="false">
+                <Size>
+                    <AbsDimension x="150" y="20" />
+                </Size>
+                <Anchors>
+                    <Anchor point="LEFT" relativeTo="$parentGoldTargetLabel" relativePoint="RIGHT"
+                        x="10" y="0" />
+                </Anchors>
+                <FontString inherits="GameFontNormal" outline="NORMAL" />
+                <Scripts>
+                    <OnEscapePressed>
+                        self:ClearFocus();
+                        -- Placeholder: Your Lua code here to hide the frame on Escape if desired
+                    </OnEscapePressed>
+                    <OnEnterPressed>
+                        -- Placeholder: Your Lua code here to process the input
+                    </OnEnterPressed>
+                </Scripts>
+            </EditBox>
+
+            <Button name="$parentToggleMinimapButton" inherits="UIPanelButtonTemplate"
+                text="Toggle Minimap Icon">
+                <Size x="160" y="22" />
+                <Anchors>
+                    <Anchor point="TOPLEFT" relativeTo="TokenTrackerHelpFrameGoldTargetEditBox" relativePoint="BOTTOMLEFT" x="0" y="-15" />
+                    </Anchors>
+                <Scripts>
+                    <OnClick>
+                        if TokenTrackerData.minimap.hide then
+                            TokenTrackerData.minimap.hide = false
+                            LibStub("LibDBIcon-1.0"):Show("TokenTracker")
+                            print("|cff00ff99[TokenTracker]|r Minimap icon shown.")
+                        else
+                            TokenTrackerData.minimap.hide = true
+                            LibStub("LibDBIcon-1.0"):Hide("TokenTracker")
+                            print("|cff00ff99[TokenTracker]|r Minimap icon hidden.")
+                        end
+                    </OnClick>
+                </Scripts>
+            </Button>
+
             <Button name="$parentCloseButton" inherits="UIPanelButtonTemplate" text="Close">
                 <Size x="70" y="22" />
                 <Anchors>
@@ -137,25 +180,7 @@
                 </Scripts>
             </Button>
 
-            <EditBox name="TokenTrackerHelpFrameGoldTargetEditBox" inherits="InputBoxTemplate" numeric="true" autoFocus="false">
-                <Size>
-                    <AbsDimension x="150" y="20"/>
-                </Size>
-                <Anchors>
-                    <Anchor point="LEFT" relativeTo="$parentGoldTargetLabel" relativePoint="RIGHT" x="10" y="0"/>
-                </Anchors>
-                <FontString inherits="GameFontNormal" outline="NORMAL"/>
-                <Scripts>
-                    <OnEscapePressed>
-                        self:ClearFocus();
-                        -- Placeholder: Your Lua code here to hide the frame on Escape if desired
-                    </OnEscapePressed>
-                    <OnEnterPressed>
-                        -- Placeholder: Your Lua code here to process the input
-                    </OnEnterPressed>
-                </Scripts>
-            </EditBox>
-                        <Button name="TokenTrackerHelpFrameCloseButton" inherits="UIPanelCloseButton">
+            <Button name="TokenTrackerHelpFrameCloseButton" inherits="UIPanelCloseButton">
                 <Size x="24" y="24" />
                 <Anchors>
                     <Anchor point="TOPRIGHT" x="-8" y="-8" />

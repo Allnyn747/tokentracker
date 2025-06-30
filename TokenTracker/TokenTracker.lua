@@ -141,22 +141,7 @@ end
 
 -- MODIFIED: This is the function that TokenTracker_MinimapButton_OnClick now calls for a right-click
 function TokenTracker.ShowOptions()
-    -- Clear existing text
-    TokenTrackerHelpFrame.text:SetText("");
-
-    -- Hardcode the commands you provided for reliable display
-    local helpText = ""
-    helpText = helpText .. "|cffffffff[TokenTracker]|r Available commands:\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt start - Start a new session.\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt stop - Stop the session.\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt reset - Reset earned gold.\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt target <amount> - Set goal.\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt progress - Show progress.\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt show | /tt hide - Toggle UI.\n"
-    helpText = helpText .. "|cffffffff[TokenTracker]|r /tt help - Show this list."
-
-    TokenTrackerHelpFrame.text:SetText(helpText);
-    TokenTrackerHelpFrame:Show();
+    TokenTrackerHelpFrame:Show()
 end
 
 -- Event Handling & Slash Commands

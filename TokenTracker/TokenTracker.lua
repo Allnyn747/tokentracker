@@ -46,7 +46,6 @@ local function PrintMessage(message)
     print("|cff00ff99[TokenTracker]|r " .. message)
 end
 
--- Gold formatting function
 local function FormatGold(copperAmount, useColor)
     local sign = ""
     if copperAmount < 0 then
@@ -57,7 +56,7 @@ local function FormatGold(copperAmount, useColor)
     local silver = math.floor((copperAmount % 10000) / 100)
     local copper = copperAmount % 100
     if useColor then
-        return sign .. string.format("|cffFFD700%d|r|cffC0C0C0%02d|r|cffCD7F32%02d|r", gold, silver, copper)
+        return sign .. string.format("|cffFFD700%d|rg|cffC0C0C0%02d|rs|cffCD7F32%02d|rc", gold, silver, copper)
     else
         return sign .. string.format("%dg %ds %dc", gold, silver, copper)
     end

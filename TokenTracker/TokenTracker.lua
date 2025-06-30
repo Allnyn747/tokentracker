@@ -124,7 +124,46 @@ function TokenTracker.StopFarming()
     TokenTracker.UpdateUI()
 end
 
--- Other TokenTracker Functions
+-- New function to set the gold target, callable from both UI and slash commands
+function TokenTracker.SetTargetGoldFromEditBox(goldAmount)
+    if goldAmount and goldAmount >= 0 then
+        -- Convert the gold amount to copper, as your slash command does
+        TokenTrackerData.targetPrice = goldAmount * 10000
+        -- CHANGE THIS LINE:
+        PrintMessage("Target gold for token set to: " .. FormatGold(TokenTrackerData.targetPrice, true))
+        -- WAS: PrintMessage("Target gold for token set to: " .. TokenTrackerData.targetPrice)
+    else
+        -- If the input isn't a valid number or is negative
+        PrintMessage("Invalid target price. Please enter a positive number (e.g., 200000).")
+    end
+    -- Always update the UI after attempting to set the target
+    TokenTracker.UpdateUI()
+end
+
+function TokenTracker.OnGoldTargetEditBoxEnterPressed(editBox)
+    local enteredText = editBox:GetText();
+    local enteredNumber = tonumber(enteredText);
+
+    if enteredNumber then
+        TokenTracker.SetTargetGoldFromEditBox(enteredNumber);
+    else
+        PrintMessage("Please enter a valid number for the gold target.");
+    end
+    
+    editBox:ClearFocus();
+end
+
+function TokenTracker.OnGoldTargetEditBoxFocusLost(editBox)
+    local currentText = editBox:GetText();
+    local currentNumber = tonumber(currentText);
+    if currentNumber then
+        local formattedGold = string.format("%dg", currentNumber);
+        editBox:SetText(formattedGold);
+    end
+end
+
+
+-- Other TokenTracker Functions (existing functions follow here)
 
 function TokenTracker.ToggleMainFrame()
     -- Use the reference from the TokenTracker table
@@ -269,12 +308,8 @@ local function HandleSlashCommand(msg, editbox)
         local valueStr = args[2]
         if valueStr then
             local newTarget = tonumber(valueStr)
-            if newTarget and newTarget >= 0 then
-                TokenTrackerData.targetPrice = newTarget * 10000
-                PrintMessage("Target gold for token set to: " .. FormatGold(TokenTrackerData.targetPrice, true))
-            else
-                PrintMessage("Invalid target price. Use '/tt target 200000'")
-            end
+            -- Call the new function to set the target. This reuses the logic.
+            TokenTracker.SetTargetGoldFromEditBox(newTarget);
         else
             PrintMessage("Current target: " .. FormatGold(TokenTrackerData.targetPrice, true))
             PrintMessage("Usage: /tt target <gold_amount>")

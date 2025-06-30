@@ -139,11 +139,13 @@
                 <Scripts>
                     <OnEscapePressed>
                         self:ClearFocus();
-                        -- Placeholder: Your Lua code here to hide the frame on Escape if desired
                     </OnEscapePressed>
                     <OnEnterPressed>
-                        -- Placeholder: Your Lua code here to process the input
+                        TokenTracker.OnGoldTargetEditBoxEnterPressed(self);
                     </OnEnterPressed>
+                    <OnEditFocusLost>
+                        TokenTracker.OnGoldTargetEditBoxFocusLost(self);
+                    </OnEditFocusLost>
                 </Scripts>
             </EditBox>
 
